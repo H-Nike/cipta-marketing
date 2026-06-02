@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cipta — single-file app demo</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<style>
+  /* =========================================================================
+     CIPTA — single-file demo
+     Phone-framed walkthrough of the app. All 17 screens live inside one
+     phone; clicking the real CTAs inside the phone advances the flow.
+     ========================================================================= */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  :root { color-scheme: light; }
+
+  body.demo {
+    background: var(--paper-warm);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+    padding: 32px 24px 48px;
+    position: relative;
+    isolation: isolate;
+  }
+  body.demo::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: -1;
+    opacity: 0.35; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.16 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* ---------- header strip ---------- */
+  .demo-header {
+    max-width: 1180px; margin: 0 auto 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 18px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .demo-header__brand {
+    font-family: var(--font-display); font-weight: 900; font-style: italic;
+    font-size: var(--t-lg); letter-spacing: -0.02em; line-height: 1;
+  }
+  .demo-header__meta {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+  .demo-header__meta strong { color: var(--ink); }
+
+  /* ---------- main grid ---------- */
+  .demo-grid {
+    max-width: 1180px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  @media (min-width: 920px) {
+    .demo-grid { grid-template-columns: 1fr 360px; gap: 56px; }
+  }
+
+  /* ---------- demo stage (phone area) ---------- */
+  .demo-stage {
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+    position: sticky;
+    top: 24px;
+  }
+  @media (max-width: 919px) {
+    .demo-stage { position: static; }
+  }
+
+  /* phone — slightly larger than the tokens default for demo legibility */
+  .phone {
+    width: 340px; height: 700px;
+    background: var(--ink);
+    border-radius: 44px;
+    padding: 12px;
+    position: relative;
+    box-shadow:
+      0 0 0 2px var(--ink),
+      0 30px 80px -20px rgba(26,20,16,0.45),
+      inset 0 0 0 1.5px rgba(255,255,255,0.08);
+  }
+  .phone__notch {
+    position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 24px; background: var(--ink); border-radius: 14px;
+    z-index: 5;
+  }
+  .phone__screen {
+    width: 100%; height: 100%;
+    background: var(--paper);
+    border-radius: 32px;
+    overflow: hidden;
+    position: relative;
+    isolation: isolate;
+  }
+  .phone__screen::before {
+    content: "";
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    opacity: 0.32; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.16 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* ---------- screens (one per app page) ---------- */
+  .screen {
+    position: absolute; inset: 0;
+    z-index: 1;
+    display: none;
+    overflow: hidden;
+    color: var(--ink);
+    opacity: 0;
+  }
+  .screen.is-active {
+    display: flex; flex-direction: column;
+    animation: screen-in 360ms cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes screen-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* shared screen scaffolding — fits the 316x676 inner phone screen */
+  .s-statusbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 22px 4px;
+    font-family: var(--font-mono); font-weight: 700; font-size: 11px;
+    color: var(--ink); letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .s-statusbar-icons { display: inline-flex; gap: 6px; font-size: 10px; }
+
+  .s-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1.5px solid var(--ink);
+    flex-shrink: 0;
+    gap: 10px;
+  }
+  .s-topbar__brand {
+    font-family: var(--font-display); font-weight: 900; font-style: italic;
+    font-size: 16px; letter-spacing: -0.02em;
+  }
+  .s-topbar__title {
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft);
+  }
+  .s-topbar__action {
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-soft);
+    background: transparent; border: 0; cursor: pointer;
+    border-bottom: 1.5px solid var(--ink-faded);
+    padding: 0 0 1px;
+  }
+
+  .s-body {
+    flex: 1 1 0;
+    overflow-y: auto;
+    padding: 16px 18px;
+    font-family: var(--font-body);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .s-body::-webkit-scrollbar { width: 4px; }
+  .s-body::-webkit-scrollbar-thumb { background: var(--ink-faded); border-radius: 2px; }
+
+  .s-tabbar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1.5px solid var(--ink);
+    background: var(--paper-warm);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    flex-shrink: 0;
+  }
+  .s-tab {
+    text-align: center;
+    padding: 6px 4px;
+    font-family: var(--font-mono); font-size: 8.5px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-faded);
+    background: transparent; border: 0;
+    cursor: pointer;
+  }
+  .s-tab__glyph { display: block; font-size: 14px; line-height: 1; margin-bottom: 2px; color: inherit; }
+  .s-tab.is-active { color: var(--stamp); }
+  .s-tab.is-active::after {
+    content: ""; display: block;
+    height: 2px; width: 18px; background: var(--stamp); margin: 2px auto 0;
+  }
+
+  /* eyebrow + headline + sub — shared across screens */
+  .s-eyebrow {
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 2px;
+  }
+  .s-h1 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: 26px; line-height: 0.95; letter-spacing: -0.025em;
+    margin: 0 0 8px;
+  }
+  .s-h1 em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .s-sub {
+    font-family: var(--font-mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faded);
+    margin: 0 0 18px; line-height: 1.6;
+  }
+
+  /* primary CTA inside phone */
+  .s-cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 10px; width: 100%;
+    background: var(--ink); color: var(--paper);
+    border: 2px solid var(--ink); border-radius: 2px;
+    padding: 12px 18px;
+    font-family: var(--font-mono); font-size: 11px;
+    font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer; text-decoration: none;
+    transition: transform 160ms, box-shadow 160ms;
+  }
+  .s-cta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 0 var(--stamp);
+  }
+  .s-cta--paper {
+    background: var(--paper-warm); color: var(--ink);
+  }
+  .s-cta--paper:hover {
+    background: var(--paper);
+    box-shadow: 3px 3px 0 0 var(--ink);
+  }
+  .s-cta-stack { display: grid; gap: 8px; }
+
+  /* receipt artifact (used in many screens) */
+  .s-receipt {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 18px 14px 14px;
+    position: relative;
+    box-shadow: var(--shadow-paper);
+    margin: 0 0 16px;
+  }
+  .s-receipt::before, .s-receipt::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 10px;
+    background: radial-gradient(circle at 6px 10px, transparent 6px, var(--paper) 6.5px) 0 0 / 12px 10px repeat-x;
+  }
+  .s-receipt::before { top: -8px; }
+  .s-receipt::after { bottom: -8px; transform: scaleY(-1); }
+
+  .s-receipt__head { text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1.5px dashed var(--ink-faded); }
+  .s-receipt__store { font-family: var(--font-display); font-weight: 900; font-size: 13px; letter-spacing: -0.01em; }
+  .s-receipt__meta { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-faded); margin-top: 2px; }
+  .s-line {
+    display: flex; align-items: baseline; gap: 6px; padding: 6px 0;
+    border-bottom: 1px dotted var(--ink-faded);
+    font-family: var(--font-mono); font-size: 11px;
+  }
+  .s-line:last-of-type { border-bottom: 0; }
+  .s-line__name { color: var(--ink); white-space: nowrap; }
+  .s-line__leader { flex: 1; border-bottom: 1.5px dotted var(--ink-faded); transform: translateY(-3px); min-width: 8px; }
+  .s-line__val { color: var(--ink-faded); white-space: nowrap; }
+  .s-line__stars { color: var(--stamp); letter-spacing: 0.14em; font-weight: 700; }
+  .s-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 10px; padding-top: 8px;
+    border-top: 1.5px solid var(--ink);
+    font-family: var(--font-display); font-weight: 900; font-size: 13px;
+    color: var(--stamp); text-transform: uppercase; letter-spacing: -0.01em;
+  }
+  .s-stamp {
+    position: absolute; top: 12px; right: 10px;
+    border: 2px solid var(--stamp); color: var(--stamp);
+    background: var(--stamp-bleed);
+    font-family: var(--font-display); font-style: italic;
+    font-weight: 800; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    padding: 3px 8px; border-radius: 2px;
+    transform: rotate(-7deg);
+  }
+  .s-id {
+    text-align: center;
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faded);
+    margin-top: 8px;
+  }
+
+  /* misc shared utilities */
+  .s-section-title {
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft);
+    margin: 14px 0 8px; padding-bottom: 6px;
+    border-bottom: 1.5px dashed var(--ink-faded);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .s-divider {
+    border: 0; border-top: 1.5px dashed var(--ink-faded); margin: 12px -6px;
+  }
+
+  /* ===== screen-specific styles ===== */
+
+  /* landing inside phone */
+  .s-landing-hero {
+    text-align: center;
+    padding: 8px 0 16px;
+  }
+  .s-landing-hero h1 {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: 38px; line-height: 0.92; letter-spacing: -0.03em;
+    margin: 12px 0;
+  }
+  .s-landing-hero h1 em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .s-ticker-strip {
+    border-block: 1.5px solid var(--ink);
+    background: var(--paper-warm);
+    padding: 6px 0;
+    margin: 0 -18px 16px;
+    overflow: hidden;
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft);
+  }
+  .s-ticker-track {
+    display: flex; gap: 36px;
+    animation: ticker 30s linear infinite;
+    width: max-content;
+    padding-left: 18px;
+  }
+  .s-ticker-track span::before { content: "★ "; color: var(--stamp); }
+  @keyframes ticker { to { transform: translateX(-50%); } }
+
+  /* sign-up form */
+  .s-form { display: grid; gap: 12px; }
+  .s-field { display: grid; gap: 4px; }
+  .s-field label {
+    font-family: var(--font-mono); font-size: 8.5px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft);
+  }
+  .s-field input {
+    background: var(--paper-warm);
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    padding: 9px 12px;
+    font-family: var(--font-body); font-size: 12px;
+    color: var(--ink);
+  }
+  .s-field input::placeholder { color: var(--ink-faded); }
+  .s-field input:focus { outline: 0; background: var(--paper); box-shadow: 0 0 0 2px var(--stamp); border-color: var(--stamp); }
+
+  /* dashboard scan card */
+  .s-scan-card {
+    background: var(--ink); color: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 22px 18px 18px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 160ms, box-shadow 160ms;
+  }
+  .s-scan-card:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 0 var(--stamp); }
+  .s-scan-card::before, .s-scan-card::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 10px;
+    background: radial-gradient(circle at 6px 10px, transparent 6px, var(--paper) 6.5px) 0 0 / 12px 10px repeat-x;
+  }
+  .s-scan-card::before { top: -1px; }
+  .s-scan-card::after { bottom: -1px; transform: scaleY(-1); }
+  .s-scan-card__eyebrow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--paper-deep); margin-bottom: 10px; }
+  .s-scan-card__title { font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .s-scan-card__sub { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--paper-deep); }
+  .s-scan-card__arrow {
+    position: absolute; right: 16px; bottom: 16px;
+    font-family: var(--font-display); font-style: italic; font-weight: 900;
+    font-size: 22px; color: var(--night-stamp);
+  }
+
+  .s-stat-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--paper); border: 1.5px solid var(--ink);
+    margin-top: 12px;
+  }
+  .s-stat { text-align: center; padding: 10px 6px; }
+  .s-stat + .s-stat { border-left: 1px dotted var(--ink-faded); }
+  .s-stat__num { font-family: var(--font-display); font-weight: 900; font-size: 18px; line-height: 1; }
+  .s-stat__label { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faded); margin-top: 4px; }
+
+  /* viewfinder */
+  .s-viewfinder {
+    aspect-ratio: 3 / 4;
+    background: var(--ink);
+    border-radius: 4px;
+    position: relative; overflow: hidden;
+    margin: 0 0 14px;
+    cursor: pointer;
+  }
+  .s-viewfinder__inner {
+    position: absolute; inset: 14px;
+    background: var(--paper);
+    border: 1.5px solid var(--paper-deep);
+    padding: 10px 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    overflow: hidden;
+  }
+  .s-viewfinder__inner::before, .s-viewfinder__inner::after {
+    content: ""; position: absolute;
+    width: 16px; height: 16px;
+    border: 2px solid var(--stamp);
+  }
+  .s-viewfinder__inner::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+  .s-viewfinder__inner::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+  .s-viewfinder__store { text-align: center; font-family: var(--font-display); font-weight: 900; font-size: 11px; letter-spacing: -0.01em; }
+  .s-viewfinder__addr { text-align: center; font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faded); margin-bottom: 4px; }
+  .s-viewfinder__line { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: var(--ink); border-bottom: 1px dotted var(--ink-faded); padding: 1px 0; }
+  .s-viewfinder__total { display: flex; justify-content: space-between; font-family: var(--font-display); font-weight: 900; font-size: 11px; margin-top: auto; padding-top: 4px; border-top: 1.5px dashed var(--ink-faded); color: var(--stamp); text-transform: uppercase; }
+  .s-viewfinder__scanline {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: var(--stamp); box-shadow: 0 0 12px rgba(200,53,28,0.7);
+    animation: scanline 3s ease-in-out infinite;
+    z-index: 5;
+  }
+  @keyframes scanline {
+    0% { top: 8%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 92%; opacity: 0; }
+  }
+
+  /* scanning overlay & success stamp */
+  .s-stage-center {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 20px;
+  }
+  .s-spinner {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 3px solid var(--paper-deep);
+    border-top-color: var(--stamp);
+    animation: spin 0.9s linear infinite;
+    margin-bottom: 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .s-progress { display: flex; gap: 6px; justify-content: center; margin-top: 14px; }
+  .s-progress span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--paper-deep);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .s-progress span:nth-child(2) { animation-delay: 0.18s; }
+  .s-progress span:nth-child(3) { animation-delay: 0.36s; }
+  .s-progress span:nth-child(4) { animation-delay: 0.54s; }
+  .s-progress span:nth-child(5) { animation-delay: 0.72s; }
+  @keyframes pulse {
+    0%, 100% { background: var(--paper-deep); }
+    50% { background: var(--stamp); }
+  }
+  .s-success-stamp {
+    width: 62px; height: 62px;
+    border: 3px solid var(--stamp); color: var(--stamp);
+    background: var(--stamp-bleed);
+    display: grid; place-items: center;
+    font-family: var(--font-display); font-style: italic; font-weight: 900;
+    font-size: 26px;
+    transform: rotate(-7deg);
+    box-shadow: inset 0 0 18px rgba(200,53,28,0.12);
+    margin-bottom: 16px;
+    animation: pop 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes pop {
+    0% { transform: rotate(-7deg) scale(0); opacity: 0; }
+    60% { transform: rotate(-7deg) scale(1.12); }
+    100% { transform: rotate(-7deg) scale(1); opacity: 1; }
+  }
+  .s-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border: 1.5px solid var(--stamp);
+    background: var(--stamp-bleed);
+    color: var(--stamp);
+    border-radius: 2px;
+    font-family: var(--font-mono); font-size: 9px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em;
+    margin-top: 4px;
+  }
+  .s-pill::before { content: "✓"; }
+
+  /* item check rows (scanned items / split list) */
+  .s-item {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 10px; align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px dotted var(--ink-faded);
+    cursor: pointer;
+  }
+  .s-item:last-of-type { border-bottom: 0; }
+  .s-item__name { font-family: var(--font-mono); font-size: 11px; }
+  .s-item__price { font-family: var(--font-mono); font-size: 9px; color: var(--ink-faded); margin-top: 2px; letter-spacing: 0.06em; }
+  .s-check {
+    appearance: none;
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    background: var(--paper-warm);
+    cursor: pointer;
+    position: relative;
+  }
+  .s-check:checked { background: var(--ink); border-color: var(--ink); }
+  .s-check:checked::after {
+    content: "✓";
+    position: absolute; inset: 0; display: grid; place-items: center;
+    color: var(--paper); font-family: var(--font-mono); font-weight: 900; font-size: 13px;
+  }
+  .s-add-row {
+    display: block; width: 100%;
+    background: transparent;
+    border: 1.5px dashed var(--ink-faded);
+    border-radius: 2px;
+    padding: 12px;
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft);
+    text-align: center; cursor: pointer;
+    margin: 12px 0 14px;
+  }
+  .s-add-row:hover { border-color: var(--ink); color: var(--stamp); background: var(--paper-warm); }
+
+  /* mood grid */
+  .s-mood-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    margin-bottom: 14px;
+  }
+  .s-mood {
+    background: var(--paper); border: 1.5px solid var(--ink);
+    padding: 14px 8px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 160ms, box-shadow 160ms;
+    color: var(--ink);
+    border-radius: 2px;
+  }
+  .s-mood:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0 0 var(--ink); }
+  .s-mood.is-selected {
+    background: var(--ink); color: var(--paper);
+    transform: translate(-2px,-2px); box-shadow: 4px 4px 0 0 var(--stamp);
+  }
+  .s-mood__glyph {
+    font-family: var(--font-display); font-style: italic; font-weight: 900;
+    font-size: 22px; line-height: 1; color: var(--stamp);
+    letter-spacing: -0.02em; margin-bottom: 6px;
+  }
+  .s-mood.is-selected .s-mood__glyph { color: var(--night-stamp); }
+  .s-mood__name { font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: -0.005em; }
+
+  /* per-dish rating row */
+  .s-rate-row {
+    padding: 12px 4px;
+    border-bottom: 1px dotted var(--ink-faded);
+  }
+  .s-rate-row:last-child { border-bottom: 0; }
+  .s-rate-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .s-rate-name { font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: -0.005em; }
+  .s-rate-stars-display { font-family: var(--font-mono); font-weight: 700; font-size: 11px; color: var(--stamp); letter-spacing: 0.16em; }
+  .s-rate-stars { display: inline-flex; gap: 4px; }
+  .s-rate-btn { background: transparent; border: 0; font-family: var(--font-mono); font-size: 22px; line-height: 1; color: var(--paper-deep); cursor: pointer; padding: 0; transition: color 120ms; }
+  .s-rate-stars[data-value="1"] .s-rate-btn:nth-child(-n+1),
+  .s-rate-stars[data-value="2"] .s-rate-btn:nth-child(-n+2),
+  .s-rate-stars[data-value="3"] .s-rate-btn:nth-child(-n+3),
+  .s-rate-stars[data-value="4"] .s-rate-btn:nth-child(-n+4),
+  .s-rate-stars[data-value="5"] .s-rate-btn:nth-child(-n+5) { color: var(--stamp); }
+
+  /* preview block (history / taste empty states) */
+  .s-empty {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 24px 16px 18px;
+    position: relative;
+    box-shadow: var(--shadow-paper);
+    margin: 0 0 14px;
+  }
+  .s-empty::before, .s-empty::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 10px;
+    background: radial-gradient(circle at 6px 10px, transparent 6px, var(--paper) 6.5px) 0 0 / 12px 10px repeat-x;
+  }
+  .s-empty::before { top: -8px; }
+  .s-empty::after { bottom: -8px; transform: scaleY(-1); }
+  .s-empty__head { text-align: center; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-faded); padding-bottom: 10px; border-bottom: 1.5px dashed var(--ink-faded); margin-bottom: 12px; }
+  .s-empty__title { font-family: var(--font-display); font-weight: 900; font-size: 16px; line-height: 1.05; letter-spacing: -0.015em; text-align: center; margin: 0 0 12px; }
+  .s-empty__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+
+  /* preview taste cards */
+  .s-taste-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; opacity: 0.6; }
+  .s-taste-card {
+    background: var(--paper); border: 1.5px solid var(--ink);
+    padding: 10px 10px 8px;
+    position: relative;
+  }
+  .s-taste-card::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -6px; height: 7px;
+    background: radial-gradient(circle at 5px 7px, transparent 4.5px, var(--paper) 5px) 0 0 / 10px 7px repeat-x;
+  }
+  .s-taste-card__store { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-faded); margin-bottom: 4px; }
+  .s-taste-card__dish { font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: -0.005em; margin: 0 0 6px; line-height: 1.15; }
+  .s-taste-card__foot { display: flex; justify-content: space-between; border-top: 1px dotted var(--ink-faded); padding-top: 4px; font-family: var(--font-mono); font-size: 9px; }
+  .s-taste-card__stars { color: var(--stamp); letter-spacing: 0.12em; font-weight: 700; }
+
+  /* profile rows */
+  .s-profile-head { text-align: center; margin-bottom: 16px; }
+  .s-profile-avatar {
+    width: 56px; height: 56px; margin: 0 auto 8px;
+    background: var(--paper-warm); border: 1.5px solid var(--ink); border-radius: 2px;
+    display: grid; place-items: center;
+    font-family: var(--font-display); font-style: italic; font-weight: 900;
+    font-size: 18px; letter-spacing: -0.02em;
+  }
+  .s-profile-name { font-family: var(--font-display); font-weight: 900; font-size: 16px; letter-spacing: -0.025em; line-height: 1; margin-bottom: 4px; }
+  .s-profile-handle { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-faded); }
+  .s-prow {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px dotted var(--ink-faded);
+    cursor: pointer;
+  }
+  .s-prow:last-child { border-bottom: 0; }
+  .s-prow__chip {
+    flex-shrink: 0; width: 26px; height: 26px;
+    border: 1.5px solid var(--ink); border-radius: 2px;
+    background: var(--paper-warm);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-weight: 700; font-size: 11px;
+  }
+  .s-prow__main { flex: 1; min-width: 0; }
+  .s-prow__label { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-faded); margin-bottom: 1px; }
+  .s-prow__value { font-family: var(--font-body); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .s-pgroup { background: var(--paper); border: 1.5px solid var(--ink); border-radius: 2px; }
+
+  .s-checks { background: var(--paper-warm); border: 1.5px solid var(--ink); padding: 12px 14px; margin: 0 0 12px; }
+  .s-checks__head { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); margin-bottom: 6px; }
+  .s-checks ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+  .s-checks li { font-family: var(--font-mono); font-size: 9px; color: var(--ink); padding-left: 16px; position: relative; text-transform: uppercase; letter-spacing: 0.06em; }
+  .s-checks li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--stamp); font-weight: 900; }
+
+  /* ===== controls below phone ===== */
+  .demo-controls {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; flex-wrap: wrap;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    padding: 10px 14px;
+  }
+  .ctrl {
+    background: var(--paper-warm); color: var(--ink);
+    border: 1.5px solid var(--ink); border-radius: 2px;
+    padding: 8px 12px;
+    font-family: var(--font-mono); font-size: 10px;
+    font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 160ms, box-shadow 160ms;
+  }
+  .ctrl:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 0 var(--ink); }
+  .ctrl[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .ctrl[disabled]:hover { transform: none; box-shadow: none; }
+  .ctrl--ink { background: var(--ink); color: var(--paper); }
+  .ctrl--ink:hover { box-shadow: 3px 3px 0 0 var(--stamp); }
+  .ctrl-counter {
+    font-family: var(--font-mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft);
+    padding: 0 8px;
+    min-width: 80px; text-align: center;
+  }
+
+  /* ===== screen list (right column) ===== */
+  .demo-aside {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 18px 16px 12px;
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow-paper);
+    position: relative;
+  }
+  .demo-aside__head {
+    font-family: var(--font-mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-soft);
+    padding-bottom: 10px; margin-bottom: 8px;
+    border-bottom: 1.5px dashed var(--ink-faded);
+  }
+  .demo-aside__group + .demo-aside__group { margin-top: 14px; }
+  .demo-aside__group-title {
+    font-family: var(--font-mono); font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-faded);
+    margin-bottom: 6px;
+  }
+  .demo-aside ol { list-style: none; padding: 0; margin: 0; }
+  .demo-aside li { display: flex; }
+  .jump {
+    width: 100%;
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 6px 8px;
+    background: transparent; border: 0;
+    border-bottom: 1px dotted var(--ink-faded);
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--ink); cursor: pointer; text-align: left;
+    transition: background 120ms;
+  }
+  .jump:hover { background: var(--paper-warm); color: var(--stamp); }
+  .jump.is-current { color: var(--stamp); font-weight: 700; }
+  .jump.is-current::after { content: "← here"; margin-left: auto; font-size: 9px; color: var(--stamp); letter-spacing: 0.16em; }
+  .jump__num {
+    font-family: var(--font-mono); font-size: 9px;
+    color: var(--ink-faded); letter-spacing: 0.1em;
+    width: 22px; flex-shrink: 0;
+  }
+
+  /* ===== footer ===== */
+  .demo-footer {
+    max-width: 1180px; margin: 32px auto 0;
+    padding-top: 18px;
+    border-top: 1.5px dashed var(--ink-faded);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-family: var(--font-mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faded);
+  }
+</style>
+</head>
+<body class="demo">
+
+<header class="demo-header">
+  <div>
+    <div class="demo-header__brand">Cipta</div>
+    <div style="font-family: var(--font-mono); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); margin-top: 4px;">
+      Single-file app demo · the receipt is the review
+    </div>
+  </div>
+  <div class="demo-header__meta">
+    <div><strong>17 screens</strong> · one HTML file</div>
+    <div>Tap CTAs inside the phone or use the controls below</div>
+  </div>
+</header>
+
+<div class="demo-grid">
+  <!-- =================================================================== -->
+  <!-- LEFT: phone stage                                                    -->
+  <!-- =================================================================== -->
+  <main class="demo-stage">
+    <div class="phone" aria-label="Cipta app demo phone">
+      <div class="phone__notch" aria-hidden="true"></div>
+      <div class="phone__screen" id="phone-screen">
+
+        <!-- =============== 1 · LANDING =============== -->
+        <article class="screen" data-screen="landing">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">DFW</span>
+            <button class="s-topbar__action" data-goto="welcome_login">Sign in</button>
+          </div>
+          <div class="s-body">
+            <div class="s-ticker-strip">
+              <div class="s-ticker-track">
+                <span>Receipt is the review</span>
+                <span>Per dish, not per place</span>
+                <span>Backed by paper</span>
+                <span>Verified by paper</span>
+                <span>Receipt is the review</span>
+                <span>Per dish, not per place</span>
+                <span>Backed by paper</span>
+                <span>Verified by paper</span>
+              </div>
+            </div>
+            <div class="s-landing-hero">
+              <div style="font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--ink-soft);">Live in DFW · iOS + Android</div>
+              <h1>The receipt<br />is the <em>review.</em></h1>
+              <p style="font-family: var(--font-body); font-size: 12px; color: var(--ink-soft); max-width: 28ch; margin: 0 auto 16px;">Scan, rate every dish, earn a verified plate.</p>
+              <button class="s-cta" data-goto="join_cipta">Start with a receipt →</button>
+              <div style="margin-top: 10px;"><button class="s-cta s-cta--paper" data-goto="welcome_login">I have an account</button></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- =============== 2 · WELCOME / LOGIN =============== -->
+        <article class="screen" data-screen="welcome_login">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Sign in</span>
+            <button class="s-topbar__action" data-goto="landing">Back</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Welcome back</span>
+            <h1 class="s-h1">Ready to <em>scan?</em></h1>
+            <p class="s-sub">Sign in to log your next plate</p>
+            <div class="s-form" style="margin-bottom: 14px;">
+              <div class="s-field">
+                <label>Email</label>
+                <input type="email" placeholder="hungry@example.com" />
+              </div>
+              <div class="s-field">
+                <label>Password</label>
+                <input type="password" placeholder="••••••••" />
+              </div>
+            </div>
+            <button class="s-cta" data-goto="dashboard">Sign in</button>
+            <p style="text-align: center; margin-top: 16px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faded);">
+              New here? <button class="s-topbar__action" data-goto="join_cipta">Create account</button>
+            </p>
+          </div>
+        </article>
+
+        <!-- =============== 3 · JOIN CIPTA =============== -->
+        <article class="screen" data-screen="join_cipta">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Create account</span>
+            <button class="s-topbar__action" data-goto="landing">Close ✕</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Free, forever</span>
+            <h1 class="s-h1">Begin your<br /><em>record.</em></h1>
+            <p class="s-sub">~30 seconds · no credit card</p>
+            <div class="s-form" style="margin-bottom: 14px;">
+              <div class="s-field"><label>Full name</label><input type="text" placeholder="Your name" /></div>
+              <div class="s-field"><label>Email</label><input type="email" placeholder="you@example.com" /></div>
+              <div class="s-field"><label>Password</label><input type="password" placeholder="••••••••" /></div>
+            </div>
+            <button class="s-cta" data-goto="dashboard">Begin my record →</button>
+          </div>
+        </article>
+
+        <!-- =============== 4 · DASHBOARD =============== -->
+        <article class="screen" data-screen="dashboard">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Home</span>
+            <button class="s-topbar__action" data-goto="profile">Profile</button>
+          </div>
+          <div class="s-body">
+            <p style="font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--ink-soft); margin-bottom: 6px;">Welcome, [ name ]</p>
+            <h1 class="s-h1">Your next<br /><em>plate.</em></h1>
+            <button class="s-scan-card" data-goto="scan_receipt" style="margin-top: 14px;">
+              <div class="s-scan-card__eyebrow">Tear here ↓</div>
+              <div class="s-scan-card__title">Scan a receipt</div>
+              <div class="s-scan-card__sub">~ 60 sec · then rate every dish</div>
+              <span class="s-scan-card__arrow">→</span>
+            </button>
+            <button class="s-cta s-cta--paper" data-goto="manual_entry" style="margin-top: 10px;">No receipt? Enter manually</button>
+
+            <div class="s-section-title">
+              <span>Your record</span>
+              <button class="s-topbar__action" data-goto="plate_history">View all</button>
+            </div>
+            <div class="s-empty">
+              <div class="s-empty__head">YOUR DINING HISTORY</div>
+              <div class="s-empty__title">Your record begins<br /><em>with the first scan.</em></div>
+              <div class="s-stat-row">
+                <div class="s-stat"><div class="s-stat__num">0</div><div class="s-stat__label">Plates</div></div>
+                <div class="s-stat"><div class="s-stat__num">—</div><div class="s-stat__label">Avg score</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="s-tabbar">
+            <button class="s-tab is-active"><span class="s-tab__glyph">▥</span>Home</button>
+            <button class="s-tab" data-goto="plate_history"><span class="s-tab__glyph">≡</span>History</button>
+            <button class="s-tab" data-goto="taste_favorites"><span class="s-tab__glyph">★</span>Taste</button>
+            <button class="s-tab" data-goto="profile"><span class="s-tab__glyph">○</span>Profile</button>
+          </div>
+        </article>
+
+        <!-- =============== 5 · SCAN RECEIPT =============== -->
+        <article class="screen" data-screen="scan_receipt">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">New plate</span>
+            <button class="s-topbar__action" data-goto="dashboard">Cancel</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Step 1 of 3</span>
+            <h1 class="s-h1">Scan to <em>review.</em></h1>
+            <p class="s-sub">Point at the receipt — Cipta reads every line</p>
+            <div class="s-viewfinder" data-goto="scanning">
+              <div class="s-viewfinder__inner">
+                <div class="s-viewfinder__store">[ RESTAURANT ]</div>
+                <div class="s-viewfinder__addr">[ DATE · TABLE ]</div>
+                <div class="s-viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+                <div class="s-viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+                <div class="s-viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+                <div class="s-viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+                <div class="s-viewfinder__total"><span>Total</span><span>[ $ ]</span></div>
+              </div>
+              <div class="s-viewfinder__scanline" aria-hidden="true"></div>
+            </div>
+            <div class="s-cta-stack">
+              <button class="s-cta" data-goto="scanning">Capture &amp; verify</button>
+              <button class="s-cta s-cta--paper" data-goto="manual_entry">Or enter manually</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- =============== 6 · SCANNING =============== -->
+        <article class="screen" data-screen="scanning" data-auto-advance="1500" data-auto-next="scan_success">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Verifying</span>
+            <span></span>
+          </div>
+          <div class="s-stage-center">
+            <div class="s-spinner" aria-hidden="true"></div>
+            <h2 style="font-family: var(--font-display); font-weight: 900; font-size: 18px; line-height: 1; letter-spacing: -0.02em; margin: 0 0 6px;">Reading the receipt</h2>
+            <p style="font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); margin: 0;">Items · totals · timestamp</p>
+            <div class="s-progress">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </article>
+
+        <!-- =============== 7 · SCAN SUCCESS =============== -->
+        <article class="screen" data-screen="scan_success" data-auto-advance="1300" data-auto-next="scanned_items">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Verified</span>
+            <span></span>
+          </div>
+          <div class="s-stage-center">
+            <div class="s-success-stamp" aria-hidden="true">✓</div>
+            <h2 style="font-family: var(--font-display); font-weight: 900; font-size: 18px; line-height: 1; letter-spacing: -0.02em; margin: 0 0 6px;">Receipt verified</h2>
+            <p style="font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); margin: 0;">Items extracted · checks passed</p>
+            <div class="s-pill">Verified plate</div>
+          </div>
+        </article>
+
+        <!-- =============== 8 · SCANNED ITEMS =============== -->
+        <article class="screen" data-screen="scanned_items">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Your items</span>
+            <button class="s-topbar__action" data-goto="dashboard">Cancel</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Step 2 of 3</span>
+            <h1 class="s-h1">Pick what you<br /><em>actually ate.</em></h1>
+            <article class="s-receipt">
+              <header class="s-receipt__head">
+                <div class="s-receipt__store">[ RESTAURANT ]</div>
+                <div class="s-receipt__meta">[ DATE · TABLE ]</div>
+              </header>
+              <label class="s-item"><div><div class="s-item__name">[ item 1 ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" checked /></label>
+              <label class="s-item"><div><div class="s-item__name">[ item 2 ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" checked /></label>
+              <label class="s-item"><div><div class="s-item__name">[ item 3 ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" checked /></label>
+              <label class="s-item"><div><div class="s-item__name">[ item 4 ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" /></label>
+              <div class="s-total"><span>Total</span><span>[ $ ]</span></div>
+            </article>
+            <button class="s-add-row" data-goto="add_missing_item">+ Add a missing item</button>
+            <div class="s-cta-stack">
+              <button class="s-cta" data-goto="mood_selection">Rate the dishes →</button>
+              <button class="s-cta s-cta--paper" data-goto="split_list">Split with a friend</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- =============== 9 · ADD MISSING ITEM =============== -->
+        <article class="screen" data-screen="add_missing_item">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Add item</span>
+            <button class="s-topbar__action" data-goto="scanned_items">Done</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Off the receipt</span>
+            <h1 class="s-h1">Add a dish<br /><em>by hand.</em></h1>
+            <p class="s-sub">Counts toward your plate</p>
+            <div class="s-form" style="margin-bottom: 14px;">
+              <div class="s-field"><label>Dish name</label><input type="text" placeholder="e.g. Carbonara" /></div>
+              <div class="s-field"><label>Price (optional)</label><input type="text" placeholder="$ 0.00" /></div>
+            </div>
+            <button class="s-cta" data-goto="scanned_items">Add to plate</button>
+          </div>
+        </article>
+
+        <!-- =============== 10 · SPLIT LIST =============== -->
+        <article class="screen" data-screen="split_list">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Split list</span>
+            <button class="s-topbar__action" data-goto="scanned_items">Back</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Shared meal</span>
+            <h1 class="s-h1">Mark what was<br /><em>yours.</em></h1>
+            <p class="s-sub">Only your dishes count</p>
+            <article class="s-receipt">
+              <label class="s-item"><div><div class="s-item__name">[ item 1 ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" checked /></label>
+              <label class="s-item"><div><div class="s-item__name">[ item 2 ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" checked /></label>
+              <label class="s-item"><div><div class="s-item__name">[ item 3 — friend's ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" /></label>
+              <label class="s-item"><div><div class="s-item__name">[ item 4 — shared ]</div><div class="s-item__price">[ $ ]</div></div><input class="s-check" type="checkbox" checked /></label>
+            </article>
+            <button class="s-cta" data-goto="scanned_items">Done splitting →</button>
+          </div>
+        </article>
+
+        <!-- =============== 11 · MANUAL ENTRY =============== -->
+        <article class="screen" data-screen="manual_entry">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Manual entry</span>
+            <button class="s-topbar__action" data-goto="dashboard">Cancel</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">No receipt</span>
+            <h1 class="s-h1">Where did<br />you <em>eat?</em></h1>
+            <p class="s-sub">Pick the restaurant · then rate</p>
+            <div class="s-form" style="margin-bottom: 14px;">
+              <div class="s-field"><label>Restaurant</label><input type="text" placeholder="Search a DFW restaurant" /></div>
+              <div class="s-field"><label>City</label><input type="text" placeholder="Dallas" /></div>
+              <div class="s-field"><label>Visited</label><input type="date" /></div>
+            </div>
+            <button class="s-cta" data-goto="mood_selection">Start review →</button>
+          </div>
+        </article>
+
+        <!-- =============== 12 · MOOD SELECTION =============== -->
+        <article class="screen" data-screen="mood_selection">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Mood</span>
+            <button class="s-topbar__action" data-goto="scanned_items">Back</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Optional · sets the tone</span>
+            <h1 class="s-h1">How was the<br /><em>vibe?</em></h1>
+            <div class="s-mood-grid">
+              <button class="s-mood is-selected" data-mood><div class="s-mood__glyph">★</div><div class="s-mood__name">Celebratory</div></button>
+              <button class="s-mood" data-mood><div class="s-mood__glyph">○</div><div class="s-mood__name">Comforted</div></button>
+              <button class="s-mood" data-mood><div class="s-mood__glyph">△</div><div class="s-mood__name">Adventurous</div></button>
+              <button class="s-mood" data-mood><div class="s-mood__glyph">⏵</div><div class="s-mood__name">Quick bite</div></button>
+              <button class="s-mood" data-mood><div class="s-mood__glyph">~</div><div class="s-mood__name">Nostalgic</div></button>
+              <button class="s-mood" data-mood><div class="s-mood__glyph">+</div><div class="s-mood__name">Skip</div></button>
+            </div>
+            <button class="s-cta" data-goto="reviewing_plate">Continue to review →</button>
+          </div>
+        </article>
+
+        <!-- =============== 13 · REVIEWING PLATE =============== -->
+        <article class="screen" data-screen="reviewing_plate">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Rate</span>
+            <button class="s-topbar__action" data-goto="mood_selection">Back</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Step 3 of 3</span>
+            <h1 class="s-h1">Rate every<br /><em>dish.</em></h1>
+            <p class="s-sub">~10 sec each</p>
+            <article class="s-receipt">
+              <div class="s-rate-row">
+                <div class="s-rate-head">
+                  <div class="s-rate-name">[ item 1 ]</div>
+                  <div class="s-rate-stars-display">★★★★★</div>
+                </div>
+                <div class="s-rate-stars" data-value="5">
+                  <button class="s-rate-btn" data-rate="1">★</button><button class="s-rate-btn" data-rate="2">★</button><button class="s-rate-btn" data-rate="3">★</button><button class="s-rate-btn" data-rate="4">★</button><button class="s-rate-btn" data-rate="5">★</button>
+                </div>
+              </div>
+              <div class="s-rate-row">
+                <div class="s-rate-head">
+                  <div class="s-rate-name">[ item 2 ]</div>
+                  <div class="s-rate-stars-display">★★★★☆</div>
+                </div>
+                <div class="s-rate-stars" data-value="4">
+                  <button class="s-rate-btn" data-rate="1">★</button><button class="s-rate-btn" data-rate="2">★</button><button class="s-rate-btn" data-rate="3">★</button><button class="s-rate-btn" data-rate="4">★</button><button class="s-rate-btn" data-rate="5">★</button>
+                </div>
+              </div>
+              <div class="s-rate-row">
+                <div class="s-rate-head">
+                  <div class="s-rate-name">[ item 3 ]</div>
+                  <div class="s-rate-stars-display">★★★★★</div>
+                </div>
+                <div class="s-rate-stars" data-value="5">
+                  <button class="s-rate-btn" data-rate="1">★</button><button class="s-rate-btn" data-rate="2">★</button><button class="s-rate-btn" data-rate="3">★</button><button class="s-rate-btn" data-rate="4">★</button><button class="s-rate-btn" data-rate="5">★</button>
+                </div>
+              </div>
+            </article>
+            <button class="s-cta" data-goto="summary_screen">See your verified plate →</button>
+          </div>
+        </article>
+
+        <!-- =============== 14 · SUMMARY SCREEN =============== -->
+        <article class="screen" data-screen="summary_screen">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Verified plate</span>
+            <button class="s-topbar__action" data-goto="dashboard">Done</button>
+          </div>
+          <div class="s-body">
+            <div style="text-align: center; margin-bottom: 14px;">
+              <span class="s-eyebrow">Plate complete</span>
+              <h1 class="s-h1" style="margin-bottom: 4px;">On the<br /><em>record.</em></h1>
+            </div>
+            <article class="s-receipt" style="transform: rotate(-0.5deg);">
+              <header class="s-receipt__head">
+                <div class="s-receipt__store">[ RESTAURANT ]</div>
+                <div class="s-receipt__meta">[ DATE · TABLE ]</div>
+              </header>
+              <div class="s-line"><span class="s-line__name">[ item 1 ]</span><span class="s-line__leader"></span><span class="s-line__stars">★★★★★</span></div>
+              <div class="s-line"><span class="s-line__name">[ item 2 ]</span><span class="s-line__leader"></span><span class="s-line__stars">★★★★☆</span></div>
+              <div class="s-line"><span class="s-line__name">[ item 3 ]</span><span class="s-line__leader"></span><span class="s-line__stars">★★★★★</span></div>
+              <div class="s-total"><span>Plate score</span><span>★★★★☆ · 4.6</span></div>
+              <span class="s-stamp">verified</span>
+              <div class="s-id">cipta · plate · #CPT-EXAMPLE</div>
+            </article>
+            <div class="s-checks">
+              <div class="s-checks__head">What was verified</div>
+              <ul>
+                <li>Receipt parsed · items + totals matched</li>
+                <li>GPS + timestamp on file</li>
+                <li>Uniqueness hash · one plate per receipt</li>
+              </ul>
+            </div>
+            <div class="s-cta-stack">
+              <button class="s-cta">Share verified plate</button>
+              <button class="s-cta s-cta--paper" data-goto="plate_history">Save &amp; view history</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- =============== 15 · PLATE HISTORY =============== -->
+        <article class="screen" data-screen="plate_history">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Your record</span>
+            <button class="s-topbar__action" data-goto="profile">Profile</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">All your verified plates</span>
+            <h1 class="s-h1">Your dining<br /><em>history.</em></h1>
+            <div class="s-stat-row" style="margin: 14px 0;">
+              <div class="s-stat"><div class="s-stat__num">1</div><div class="s-stat__label">Plates</div></div>
+              <div class="s-stat"><div class="s-stat__num">4.6</div><div class="s-stat__label">Avg score</div></div>
+            </div>
+            <article class="s-receipt">
+              <header class="s-receipt__head">
+                <div class="s-receipt__store">[ RESTAURANT ]</div>
+                <div class="s-receipt__meta">[ DATE ]</div>
+              </header>
+              <div class="s-line"><span class="s-line__name">[ item 1 ]</span><span class="s-line__leader"></span><span class="s-line__stars">★★★★★</span></div>
+              <div class="s-line"><span class="s-line__name">[ item 2 ]</span><span class="s-line__leader"></span><span class="s-line__stars">★★★★☆</span></div>
+              <div class="s-line"><span class="s-line__name">[ item 3 ]</span><span class="s-line__leader"></span><span class="s-line__stars">★★★★★</span></div>
+              <span class="s-stamp">verified</span>
+              <div class="s-id">#CPT-EXAMPLE · 4.6</div>
+            </article>
+            <p style="text-align: center; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-faded); margin: 4px 0 8px;">— More appears as you scan —</p>
+          </div>
+          <div class="s-tabbar">
+            <button class="s-tab" data-goto="dashboard"><span class="s-tab__glyph">▥</span>Home</button>
+            <button class="s-tab is-active"><span class="s-tab__glyph">≡</span>History</button>
+            <button class="s-tab" data-goto="taste_favorites"><span class="s-tab__glyph">★</span>Taste</button>
+            <button class="s-tab" data-goto="profile"><span class="s-tab__glyph">○</span>Profile</button>
+          </div>
+        </article>
+
+        <!-- =============== 16 · TASTE FAVORITES =============== -->
+        <article class="screen" data-screen="taste_favorites">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Your taste</span>
+            <button class="s-topbar__action" data-goto="profile">Profile</button>
+          </div>
+          <div class="s-body">
+            <span class="s-eyebrow">Top-rated dishes</span>
+            <h1 class="s-h1">Built from<br /><em>real receipts.</em></h1>
+            <div class="s-empty">
+              <div class="s-empty__head">YOUR TASTE PROFILE</div>
+              <div class="s-empty__title">Favorites grow<br /><em>with every plate.</em></div>
+              <p style="text-align: center; font-family: var(--font-body); font-size: 11px; color: var(--ink-soft); margin: 0; line-height: 1.5;">4★ and 5★ dishes pin themselves here automatically.</p>
+            </div>
+            <p style="text-align: center; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-faded); margin: 0 0 8px;">— Preview —</p>
+            <div class="s-taste-grid">
+              <div class="s-taste-card"><div class="s-taste-card__store">[ restaurant ]</div><h3 class="s-taste-card__dish">[ a 5★ dish ]</h3><div class="s-taste-card__foot"><span class="s-taste-card__stars">★★★★★</span></div></div>
+              <div class="s-taste-card"><div class="s-taste-card__store">[ restaurant ]</div><h3 class="s-taste-card__dish">[ a favorite ]</h3><div class="s-taste-card__foot"><span class="s-taste-card__stars">★★★★★</span></div></div>
+              <div class="s-taste-card"><div class="s-taste-card__store">[ restaurant ]</div><h3 class="s-taste-card__dish">[ comfort dish ]</h3><div class="s-taste-card__foot"><span class="s-taste-card__stars">★★★★☆</span></div></div>
+              <div class="s-taste-card"><div class="s-taste-card__store">[ restaurant ]</div><h3 class="s-taste-card__dish">[ discovery ]</h3><div class="s-taste-card__foot"><span class="s-taste-card__stars">★★★★★</span></div></div>
+            </div>
+          </div>
+          <div class="s-tabbar">
+            <button class="s-tab" data-goto="dashboard"><span class="s-tab__glyph">▥</span>Home</button>
+            <button class="s-tab" data-goto="plate_history"><span class="s-tab__glyph">≡</span>History</button>
+            <button class="s-tab is-active"><span class="s-tab__glyph">★</span>Taste</button>
+            <button class="s-tab" data-goto="profile"><span class="s-tab__glyph">○</span>Profile</button>
+          </div>
+        </article>
+
+        <!-- =============== 17 · PROFILE =============== -->
+        <article class="screen" data-screen="profile">
+          <div class="s-statusbar"><span>9:41</span><span class="s-statusbar-icons">●●● ▮▮▮ 100%</span></div>
+          <div class="s-topbar">
+            <span class="s-topbar__brand">Cipta</span>
+            <span class="s-topbar__title">Profile</span>
+            <button class="s-topbar__action" data-goto="dashboard">Done</button>
+          </div>
+          <div class="s-body">
+            <div class="s-profile-head">
+              <div class="s-profile-avatar">[N]</div>
+              <h1 class="s-profile-name">[ your name ]</h1>
+              <div class="s-profile-handle">@[ handle ] · DFW</div>
+            </div>
+            <div class="s-section-title"><span>Account</span></div>
+            <div class="s-pgroup">
+              <div class="s-prow"><div class="s-prow__chip">@</div><div class="s-prow__main"><div class="s-prow__label">Email</div><div class="s-prow__value">[ your email ]</div></div><span style="color: var(--ink-faded);">›</span></div>
+              <div class="s-prow"><div class="s-prow__chip">☎</div><div class="s-prow__main"><div class="s-prow__label">Phone</div><div class="s-prow__value">[ your phone ]</div></div><span style="color: var(--ink-faded);">›</span></div>
+              <div class="s-prow"><div class="s-prow__chip">⚿</div><div class="s-prow__main"><div class="s-prow__label">Security</div><div class="s-prow__value">Update password</div></div><span style="color: var(--ink-faded);">›</span></div>
+            </div>
+            <div class="s-section-title"><span>Preferences</span></div>
+            <div class="s-pgroup">
+              <div class="s-prow"><div class="s-prow__chip">D</div><div class="s-prow__main"><div class="s-prow__label">Dietary</div><div class="s-prow__value">Vegetarian · No nuts</div></div><span style="color: var(--ink-faded);">›</span></div>
+              <div class="s-prow"><div class="s-prow__chip">N</div><div class="s-prow__main"><div class="s-prow__label">Notifications</div><div class="s-prow__value">3 enabled</div></div><span style="color: var(--ink-faded);">›</span></div>
+            </div>
+            <button class="s-cta s-cta--paper" data-goto="welcome_login" style="margin-top: 14px;">Log out</button>
+          </div>
+          <div class="s-tabbar">
+            <button class="s-tab" data-goto="dashboard"><span class="s-tab__glyph">▥</span>Home</button>
+            <button class="s-tab" data-goto="plate_history"><span class="s-tab__glyph">≡</span>History</button>
+            <button class="s-tab" data-goto="taste_favorites"><span class="s-tab__glyph">★</span>Taste</button>
+            <button class="s-tab is-active"><span class="s-tab__glyph">○</span>Profile</button>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- ============= controls below the phone ============= -->
+    <div class="demo-controls" role="toolbar" aria-label="demo controls">
+      <button class="ctrl" id="ctrl-prev" aria-label="Previous step">← Prev</button>
+      <span class="ctrl-counter" id="ctrl-counter">— / —</span>
+      <button class="ctrl ctrl--ink" id="ctrl-play" aria-label="Auto-play the canonical flow">▶ Auto-play</button>
+      <button class="ctrl" id="ctrl-next" aria-label="Next step">Next →</button>
+      <button class="ctrl" id="ctrl-restart" aria-label="Restart">↺ Restart</button>
+    </div>
+  </main>
+
+  <!-- =================================================================== -->
+  <!-- RIGHT: jump-to-any-screen list                                       -->
+  <!-- =================================================================== -->
+  <aside class="demo-aside" aria-label="screen list">
+    <div class="demo-aside__head">All 17 screens</div>
+
+    <div class="demo-aside__group">
+      <div class="demo-aside__group-title">Canonical flow</div>
+      <ol id="flow-list">
+        <li><button class="jump" data-jump="landing"><span class="jump__num">01</span>Landing</button></li>
+        <li><button class="jump" data-jump="join_cipta"><span class="jump__num">02</span>Join Cipta</button></li>
+        <li><button class="jump" data-jump="dashboard"><span class="jump__num">03</span>Dashboard</button></li>
+        <li><button class="jump" data-jump="scan_receipt"><span class="jump__num">04</span>Scan receipt</button></li>
+        <li><button class="jump" data-jump="scanning"><span class="jump__num">05</span>Scanning…</button></li>
+        <li><button class="jump" data-jump="scan_success"><span class="jump__num">06</span>Verified</button></li>
+        <li><button class="jump" data-jump="scanned_items"><span class="jump__num">07</span>Your items</button></li>
+        <li><button class="jump" data-jump="mood_selection"><span class="jump__num">08</span>Mood</button></li>
+        <li><button class="jump" data-jump="reviewing_plate"><span class="jump__num">09</span>Rate dishes</button></li>
+        <li><button class="jump" data-jump="summary_screen"><span class="jump__num">10</span>Verified plate</button></li>
+      </ol>
+    </div>
+
+    <div class="demo-aside__group">
+      <div class="demo-aside__group-title">Side flows</div>
+      <ol>
+        <li><button class="jump" data-jump="welcome_login"><span class="jump__num">·</span>Sign in</button></li>
+        <li><button class="jump" data-jump="add_missing_item"><span class="jump__num">·</span>Add missing item</button></li>
+        <li><button class="jump" data-jump="split_list"><span class="jump__num">·</span>Split list</button></li>
+        <li><button class="jump" data-jump="manual_entry"><span class="jump__num">·</span>Manual entry</button></li>
+        <li><button class="jump" data-jump="plate_history"><span class="jump__num">·</span>Plate history</button></li>
+        <li><button class="jump" data-jump="taste_favorites"><span class="jump__num">·</span>Taste favorites</button></li>
+        <li><button class="jump" data-jump="profile"><span class="jump__num">·</span>Profile</button></li>
+      </ol>
+    </div>
+  </aside>
+</div>
+
+<footer class="demo-footer">
+  <span>Cipta · DFW · 2026 · the receipt is the review</span>
+  <span><a href="../index.html" style="color: inherit; border-bottom: 1.5px solid var(--ink); padding-bottom: 1px;">cipta.co</a></span>
+</footer>
+
+<script>
+(function () {
+  // canonical happy-path flow
+  const FLOW = [
+    'landing', 'join_cipta', 'dashboard',
+    'scan_receipt', 'scanning', 'scan_success',
+    'scanned_items', 'mood_selection', 'reviewing_plate', 'summary_screen',
+  ];
+
+  const screens = document.querySelectorAll('.screen');
+  const phoneScreen = document.getElementById('phone-screen');
+  const counter = document.getElementById('ctrl-counter');
+  const prevBtn = document.getElementById('ctrl-prev');
+  const nextBtn = document.getElementById('ctrl-next');
+  const playBtn = document.getElementById('ctrl-play');
+  const restartBtn = document.getElementById('ctrl-restart');
+
+  let currentName = 'landing';
+  let isPlaying = false;
+  let autoTimer = null;
+
+  function findScreen(name) {
+    return document.querySelector('.screen[data-screen="' + name + '"]');
+  }
+
+  function flowIndex(name) { return FLOW.indexOf(name); }
+
+  function show(name, opts) {
+    opts = opts || {};
+    clearTimeout(autoTimer);
+    autoTimer = null;
+    const target = findScreen(name);
+    if (!target) return;
+
+    // swap with View Transitions if supported, else snap
+    const swap = () => {
+      screens.forEach((s) => s.classList.remove('is-active'));
+      target.classList.add('is-active');
+      currentName = name;
+      updateChrome();
+      target.querySelector('.s-body, .s-stage-center')?.scrollTo?.(0, 0);
+      // honor auto-advance metadata
+      const advance = target.dataset.autoAdvance;
+      const next = target.dataset.autoNext;
+      if (advance && next) {
+        autoTimer = setTimeout(() => show(next), parseInt(advance, 10));
+      } else if (isPlaying) {
+        const idx = flowIndex(name);
+        if (idx >= 0 && idx < FLOW.length - 1) {
+          autoTimer = setTimeout(() => show(FLOW[idx + 1]), opts.playDelay || 2400);
+        } else {
+          stopPlay();
+        }
+      }
+    };
+    if (document.startViewTransition && !opts.noTransition) {
+      document.startViewTransition(swap);
+    } else {
+      swap();
+    }
+  }
+
+  function updateChrome() {
+    // counter shows step in canonical flow if applicable, else screen name
+    const idx = flowIndex(currentName);
+    if (idx >= 0) {
+      counter.textContent = (idx + 1).toString().padStart(2, '0') + ' / ' + FLOW.length;
+      prevBtn.disabled = (idx === 0);
+      nextBtn.disabled = (idx === FLOW.length - 1);
+    } else {
+      counter.textContent = currentName.replace(/_/g, ' ');
+      prevBtn.disabled = false;
+      nextBtn.disabled = false;
+    }
+    // sync the jump list highlight
+    document.querySelectorAll('.jump').forEach((b) => {
+      b.classList.toggle('is-current', b.dataset.jump === currentName);
+    });
+    playBtn.textContent = isPlaying ? '⏸ Pause' : '▶ Auto-play';
+  }
+
+  function next() {
+    const idx = flowIndex(currentName);
+    if (idx >= 0 && idx < FLOW.length - 1) show(FLOW[idx + 1]);
+    else if (idx === FLOW.length - 1) show(FLOW[0]);
+    else show(FLOW[0]);
+  }
+  function prev() {
+    const idx = flowIndex(currentName);
+    if (idx > 0) show(FLOW[idx - 1]);
+    else if (idx === 0) {} // at start
+    else show(FLOW[0]);
+  }
+  function startPlay() {
+    isPlaying = true;
+    // jump back to the start of the flow if we're outside it
+    if (flowIndex(currentName) < 0) show(FLOW[0]);
+    else show(currentName); // re-trigger auto-advance
+  }
+  function stopPlay() {
+    isPlaying = false;
+    clearTimeout(autoTimer);
+    updateChrome();
+  }
+  function togglePlay() { isPlaying ? stopPlay() : startPlay(); }
+  function restart() { stopPlay(); show(FLOW[0]); }
+
+  // delegate clicks: any [data-goto] inside a screen swaps screens
+  document.addEventListener('click', (e) => {
+    const goto = e.target.closest('[data-goto]');
+    if (goto) {
+      e.preventDefault();
+      stopPlay();
+      show(goto.dataset.goto);
+      return;
+    }
+    const jump = e.target.closest('[data-jump]');
+    if (jump) {
+      e.preventDefault();
+      stopPlay();
+      show(jump.dataset.jump);
+      return;
+    }
+  });
+
+  // toolbar
+  prevBtn.addEventListener('click', () => { stopPlay(); prev(); });
+  nextBtn.addEventListener('click', () => { stopPlay(); next(); });
+  playBtn.addEventListener('click', togglePlay);
+  restartBtn.addEventListener('click', restart);
+
+  // keyboard: arrows + space
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); stopPlay(); next(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); stopPlay(); prev(); }
+    else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+    else if (e.key === 'r' || e.key === 'R') { restart(); }
+  });
+
+  // mood selection inside the phone
+  document.querySelectorAll('[data-mood]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const grid = btn.closest('.s-mood-grid');
+      grid.querySelectorAll('.s-mood').forEach((b) => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+    });
+  });
+
+  // star rating inside the phone
+  document.querySelectorAll('.s-rate-stars').forEach((group) => {
+    group.querySelectorAll('.s-rate-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const v = parseInt(btn.dataset.rate, 10);
+        group.dataset.value = String(v);
+        const display = group.closest('.s-rate-row').querySelector('.s-rate-stars-display');
+        if (display) display.textContent = '★'.repeat(v) + '☆'.repeat(5 - v);
+      });
+    });
+  });
+
+  // boot
+  show('landing', { noTransition: true });
+})();
+</script>
+
+</body>
+</html>

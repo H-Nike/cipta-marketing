@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Cipta — Your items</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<link rel="stylesheet" href="cipta.css" />
+<style>
+  body { padding-bottom: 80px; }
+
+  main {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+  }
+
+  .heading {
+    margin-bottom: 24px;
+  }
+  .heading__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .heading__eyebrow::before {
+    content: "STEP 2 / 3"; padding: 4px 10px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: var(--r-sm);
+  }
+  .heading__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+  }
+  .heading__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .heading__sub {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+    margin: 0;
+  }
+
+  .receipt {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 28px 22px 24px;
+    position: relative;
+    box-shadow: var(--shadow-paper);
+    margin-bottom: 22px;
+  }
+  .receipt::before, .receipt::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 12px;
+    background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+  }
+  .receipt::before { top: -10px; }
+  .receipt::after { bottom: -10px; transform: scaleY(-1); }
+
+  .receipt__head {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .receipt__store {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-md);
+    letter-spacing: -0.01em;
+  }
+  .receipt__meta {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faded);
+    margin-top: 4px;
+  }
+  .receipt__divider {
+    border: 0;
+    border-top: 1.5px dashed var(--ink-faded);
+    margin: 14px -8px;
+  }
+
+  .item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 6px;
+    border-bottom: 1px dotted var(--ink-faded);
+    cursor: pointer;
+    transition: background 120ms;
+  }
+  .item:last-child { border-bottom: 0; }
+  .item:hover { background: var(--paper-warm); }
+
+  .item__name {
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+  .item__price {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    color: var(--ink-faded);
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+  .item__check {
+    appearance: none;
+    width: 28px; height: 28px;
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    background: var(--paper-warm);
+    cursor: pointer;
+    position: relative;
+    transition: background 160ms, border-color 160ms;
+  }
+  .item__check:checked {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .item__check:checked::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: grid; place-items: center;
+    color: var(--paper);
+    font-family: var(--font-mono);
+    font-weight: 900;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .receipt__total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1.5px solid var(--ink);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-md);
+    letter-spacing: -0.01em;
+    color: var(--stamp);
+    text-transform: uppercase;
+  }
+  .receipt__total-meta {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    color: var(--ink-faded);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  .add-row {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1.5px dashed var(--ink-faded);
+    border-radius: var(--r-sm);
+    padding: 18px;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 28px;
+    transition: border-color 160ms, color 160ms, background 160ms;
+  }
+  .add-row:hover {
+    border-color: var(--ink);
+    color: var(--stamp);
+    background: var(--paper-warm);
+  }
+
+  .ctas {
+    display: grid; gap: 10px;
+  }
+  .btn-stack {
+    width: 100%;
+    padding: 16px 22px;
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    transition: transform 160ms, box-shadow 160ms;
+    display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+    text-decoration: none;
+  }
+  .btn-stack--ink { background: var(--ink); color: var(--paper); }
+  .btn-stack--ink:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 0 var(--stamp);
+  }
+  .btn-stack--paper { background: var(--paper-warm); color: var(--ink); }
+  .btn-stack--paper:hover {
+    transform: translate(-1px, -1px);
+    background: var(--paper);
+    box-shadow: 3px 3px 0 0 var(--ink);
+  }
+</style>
+</head>
+<body class="cipta-shell">
+
+<header class="cipta-topbar">
+  <a class="cipta-topbar__brand" href="dashboard.html">Cipta</a>
+  <div class="cipta-topbar__title">Your items</div>
+  <a class="cipta-topbar__action" href="dashboard.html">Cancel</a>
+</header>
+
+<main>
+  <div class="heading feed-in feed-in-1">
+    <span class="heading__eyebrow"></span>
+    <h1 class="heading__title">Pick what you<br /><em>actually ate.</em></h1>
+    <p class="heading__sub">Tap each dish you tried · uncheck what you didn't</p>
+  </div>
+
+  <article class="receipt feed-in feed-in-2">
+    <header class="receipt__head">
+      <div class="receipt__store">[ RESTAURANT ]</div>
+      <div class="receipt__meta">[ DATE · TABLE · SERVER ]</div>
+    </header>
+    <hr class="receipt__divider" />
+
+    <label class="item">
+      <div>
+        <div class="item__name">[ item 1 ]</div>
+        <div class="item__price">[ $ ]</div>
+      </div>
+      <input class="item__check" type="checkbox" checked />
+    </label>
+    <label class="item">
+      <div>
+        <div class="item__name">[ item 2 ]</div>
+        <div class="item__price">[ $ ]</div>
+      </div>
+      <input class="item__check" type="checkbox" checked />
+    </label>
+    <label class="item">
+      <div>
+        <div class="item__name">[ item 3 ]</div>
+        <div class="item__price">[ $ ]</div>
+      </div>
+      <input class="item__check" type="checkbox" checked />
+    </label>
+    <label class="item">
+      <div>
+        <div class="item__name">[ item 4 ]</div>
+        <div class="item__price">[ $ ]</div>
+      </div>
+      <input class="item__check" type="checkbox" />
+    </label>
+    <label class="item">
+      <div>
+        <div class="item__name">[ item 5 ]</div>
+        <div class="item__price">[ $ ]</div>
+      </div>
+      <input class="item__check" type="checkbox" />
+    </label>
+
+    <div class="receipt__total">
+      <span>Total</span>
+      <span>[ $ ]</span>
+    </div>
+    <div class="receipt__total-meta">cipta · pre-rate · #CPT-EXAMPLE</div>
+  </article>
+
+  <a class="add-row" href="add_missing_item.html">+ Add a missing item</a>
+
+  <div class="ctas">
+    <a class="btn-stack btn-stack--ink" href="mood_selection.html">Rate the dishes →</a>
+    <a class="btn-stack btn-stack--paper" href="split_list.html">Or split with a friend</a>
+  </div>
+</main>
+
+<nav class="cipta-tabbar fixed bottom-0" aria-label="primary">
+  <a href="dashboard.html" data-icon="home"><span class="tab__glyph">▥</span><span>Home</span></a>
+  <a href="plate_history.html" data-icon="history"><span class="tab__glyph">≡</span><span>History</span></a>
+  <a href="taste_favorites.html" data-icon="restaurant_menu" class="is-active"><span class="tab__glyph">★</span><span>Taste</span></a>
+  <a href="profile.html" data-icon="person"><span class="tab__glyph">○</span><span>Profile</span></a>
+</nav>
+
+<script src="cipta.js" defer></script>
+</body>
+</html>

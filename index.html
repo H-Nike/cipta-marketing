@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cipta — the receipt is the review</title>
+<meta name="description" content="Cipta is the only restaurant-review app where every rating is backed by a receipt. Per-dish, per-meal, verified. Launching in DFW, 2026." />
+<link rel="stylesheet" href="cipta_design/tokens.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+@media (max-width: 720px) { body { padding-bottom: 84px; } }
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* paper grain over body */
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: 0.4; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.16 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- shared utilities ---------- */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content: ""; width: 36px; height: 1.5px; background: var(--ink); }
+.eyebrow--center { justify-content: center; }
+.h-section {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  margin: 16px 0 0;
+}
+.h-section em { font-style: italic; color: var(--stamp); font-weight: 400; }
+.lede { font-size: var(--t-md); color: var(--ink-soft); max-width: 56ch; }
+
+/* ---------- nav ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(244, 237, 224, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1.5px solid var(--ink);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav__brand {
+  font-family: var(--font-display);
+  font-weight: 900; font-style: italic;
+  font-size: var(--t-md);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.nav__links { display: none; gap: 36px; font-family: var(--font-mono); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.18em; }
+@media (min-width: 900px) { .nav__links { display: inline-flex; } }
+.nav__link { padding: 6px 0; border-bottom: 1.5px solid transparent; transition: border-color 160ms; }
+.nav__link:hover { border-color: var(--ink); }
+.nav__cta {
+  background: var(--ink); color: var(--paper);
+  padding: 10px 16px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.16em;
+  transition: transform 160ms, box-shadow 160ms;
+}
+.nav__cta:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 0 var(--ink); }
+
+/* ---------- ticker ---------- */
+.ticker { border-top: 0; border-bottom: 1.5px solid var(--ink); }
+
+/* ---------- hero ---------- */
+.hero {
+  padding: 96px 0 64px;
+  position: relative;
+}
+@media (min-width: 1024px) { .hero { padding: 140px 0 100px; } }
+.hero__grid {
+  display: grid; grid-template-columns: 1fr;
+  gap: 64px; align-items: center;
+}
+@media (min-width: 1024px) { .hero__grid { grid-template-columns: 1.15fr 1fr; gap: 80px; } }
+.hero__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(4rem, 11vw, 9.5rem);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  margin: 28px 0 32px;
+}
+.hero__title em {
+  font-style: italic; font-weight: 400; color: var(--stamp);
+  white-space: nowrap;
+}
+.hero__title-mark { color: var(--stamp); transform: translateY(-0.04em); }
+.hero__lede { max-width: 38ch; margin: 0 0 40px; font-size: var(--t-md); color: var(--ink-soft); }
+.hero__ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.hero__see {
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  border-bottom: 1.5px solid var(--ink-faded);
+  padding-bottom: 4px;
+  transition: color 160ms, border-color 160ms;
+}
+.hero__see:hover { color: var(--ink); border-color: var(--ink); }
+.hero__proof {
+  margin-top: 56px;
+  border-top: 1.5px dashed var(--ink-faded);
+  padding-top: 24px;
+  display: flex; align-items: center; gap: 18px;
+}
+.hero__proof-num {
+  font-family: var(--font-display); font-weight: 900; font-size: var(--t-xl); line-height: 1;
+}
+.hero__proof-label {
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--ink-faded); max-width: 18ch;
+}
+
+/* ---------- demo receipt (hero right) ---------- */
+.receipt-stage {
+  position: relative;
+  display: flex; justify-content: center;
+}
+.receipt-stage::after {
+  content: ""; position: absolute; inset: -6% -10%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(200,53,28,0.12), transparent 70%);
+}
+.receipt {
+  width: min(440px, 100%);
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  box-shadow: var(--shadow-lift);
+  padding: 40px 32px 28px;
+  position: relative;
+  transform: rotate(-1.5deg);
+  transition: transform 700ms cubic-bezier(.2,.7,.2,1);
+}
+.receipt:hover { transform: rotate(0deg); }
+.receipt::before, .receipt::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 12px;
+  background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+}
+.receipt::before { top: -10px; }
+.receipt::after  { bottom: -10px; transform: scaleY(-1); }
+
+.receipt__head { text-align: center; margin-bottom: 24px; }
+.receipt__store {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: var(--t-lg); letter-spacing: -0.02em; margin-bottom: 6px;
+}
+.receipt__addr {
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faded);
+}
+.receipt__meta-row {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-faded); margin-top: 14px;
+}
+.receipt__divider { border: 0; height: 0; border-top: 1.5px dashed var(--ink-faded); margin: 18px -16px; }
+.receipt__items { display: grid; gap: 14px; }
+.receipt__total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: 14px;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: var(--t-md); letter-spacing: -0.01em;
+}
+.receipt__total .stars { font-family: var(--font-mono); font-size: var(--t-md); }
+.receipt__stamp-anchor { position: absolute; right: 16px; top: 22px; }
+.receipt__footer {
+  text-align: center; font-family: var(--font-mono);
+  font-size: var(--t-xs); letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-faded); margin-top: 18px;
+}
+.receipt__barcode {
+  margin: 14px auto 0; height: 36px; width: 80%;
+  background-image: repeating-linear-gradient(90deg,
+    var(--ink) 0 2px, transparent 2px 4px,
+    var(--ink) 4px 5px, transparent 5px 9px,
+    var(--ink) 9px 11px, transparent 11px 14px);
+}
+
+/* ---------- showcase ("See it in action") ---------- */
+.showcase {
+  padding: 96px 0 120px;
+  position: relative;
+}
+.showcase__head {
+  text-align: center; max-width: 720px; margin: 0 auto 64px;
+  padding: 0 24px;
+}
+.showcase__head .lede { margin: 24px auto 0; }
+.showcase__phones {
+  display: flex; flex-direction: column; align-items: center; gap: 56px;
+  padding: 0 24px;
+  perspective: 2200px;
+}
+@media (min-width: 880px) {
+  .showcase__phones {
+    flex-direction: row; flex-wrap: wrap;
+    align-items: end; justify-content: center; gap: 32px;
+  }
+}
+.showcase__col { display: flex; flex-direction: column; align-items: center; gap: 20px; flex: 0 0 auto; }
+.showcase__phone-wrap { transform-style: preserve-3d; }
+/* On mobile the phones stack — drop the rotation/lift so each one reads upright. */
+.showcase__phone-wrap--left .phone,
+.showcase__phone-wrap--right .phone,
+.showcase__phone-wrap--center .phone { transform: none; }
+@media (min-width: 880px) {
+  .showcase__phone-wrap--left .phone { transform: rotate(-3deg); }
+  .showcase__phone-wrap--center { z-index: 2; }
+  .showcase__phone-wrap--center .phone { transform: translateY(-12px) scale(1.04); }
+  .showcase__phone-wrap--right .phone { transform: rotate(3deg); }
+}
+.showcase__caption {
+  text-align: center;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  max-width: 26ch;
+}
+.showcase__caption strong {
+  display: block;
+  font-family: var(--font-display); font-weight: 900; font-style: italic;
+  font-size: var(--t-md); letter-spacing: -0.01em;
+  text-transform: none; color: var(--ink); margin-bottom: 4px;
+}
+.showcase__step {
+  font-family: var(--font-display); font-weight: 900;
+  color: var(--stamp); font-size: var(--t-md);
+  letter-spacing: -0.01em;
+  margin-right: 6px;
+}
+
+/* ---------- stats bar (totals strip) ---------- */
+.stats {
+  border-block: 1.5px solid var(--ink);
+  background: var(--paper-warm);
+  padding: 36px 0;
+}
+.stats__grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px 24px;
+  text-align: center;
+}
+@media (min-width: 720px) { .stats__grid { grid-template-columns: repeat(4, 1fr); } }
+.stat__num {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  line-height: 1; letter-spacing: -0.03em;
+  color: var(--stamp);
+}
+.stat__label {
+  margin-top: 8px;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--ink-soft);
+}
+
+/* ---------- how it works ---------- */
+.how { padding: 120px 0; }
+.how__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 64px; }
+.how__list { display: grid; gap: 0; }
+.how__item {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 28px;
+  padding: 36px 0;
+  border-top: 1.5px dashed var(--ink-faded);
+  align-items: start;
+}
+.how__item:last-child { border-bottom: 1.5px solid var(--ink); }
+@media (min-width: 768px) { .how__item { grid-template-columns: 100px 1fr auto; } }
+.how__num {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  line-height: 0.85; letter-spacing: -0.04em;
+  color: var(--stamp);
+}
+.how__copy h3 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  margin: 0 0 10px; letter-spacing: -0.015em;
+}
+.how__copy p { color: var(--ink-soft); margin: 0; max-width: 56ch; }
+.how__tag {
+  display: none;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--ink-faded); align-self: end; white-space: nowrap;
+}
+@media (min-width: 768px) { .how__tag { display: block; } }
+
+/* ---------- personal ledger ---------- */
+.ledger {
+  padding: 120px 0;
+  background: var(--paper-warm);
+  border-block: 1.5px solid var(--ink);
+}
+.ledger__grid {
+  display: grid; grid-template-columns: 1fr; gap: 64px;
+  align-items: center;
+}
+@media (min-width: 1024px) { .ledger__grid { grid-template-columns: 1fr 1fr; gap: 96px; } }
+.ledger__copy h2 { margin-top: 16px; }
+.ledger__copy .lede { margin-top: 24px; }
+.ledger__uses {
+  list-style: none; padding: 0; margin: 32px 0;
+  display: grid; gap: 14px;
+  border-top: 1.5px dashed var(--ink-faded);
+  padding-top: 24px;
+}
+.ledger__uses li {
+  font-family: var(--font-display);
+  font-size: var(--t-md);
+  font-style: italic;
+  color: var(--ink);
+  padding-left: 28px;
+  position: relative;
+  line-height: 1.4;
+}
+.ledger__uses li::before {
+  content: "?";
+  position: absolute; left: 0; top: 0;
+  color: var(--stamp);
+  font-weight: 900; font-style: normal;
+  font-family: var(--font-display);
+  font-size: var(--t-lg); line-height: 1;
+}
+.ledger__cta {
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink); border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 4px; transition: color 160ms;
+}
+.ledger__cta:hover { color: var(--stamp); border-color: var(--stamp); }
+
+.ledger__receipt-stage {
+  position: relative;
+  display: flex; justify-content: center;
+}
+.ledger__receipt-stage::after {
+  content: ""; position: absolute; inset: -4% -8%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(200,53,28,0.10), transparent 70%);
+}
+.ledger__receipt {
+  width: min(440px, 100%);
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  box-shadow: var(--shadow-paper);
+  padding: 36px 28px 24px;
+  position: relative;
+  transform: rotate(0.6deg);
+}
+.ledger__receipt::before, .ledger__receipt::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 12px;
+  background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper-warm) 7.5px) 0 0 / 14px 12px repeat-x;
+}
+.ledger__receipt::before { top: -10px; }
+.ledger__receipt::after { bottom: -10px; transform: scaleY(-1); }
+.ledger__row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--t-sm);
+  padding: 8px 0;
+  align-items: baseline;
+}
+.ledger__date {
+  color: var(--ink-faded);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: var(--t-xs);
+}
+.ledger__where {
+  color: var(--ink);
+}
+.ledger__where small {
+  display: block;
+  color: var(--ink-faded);
+  font-size: var(--t-xs);
+  margin-top: 2px;
+  letter-spacing: 0.04em;
+}
+.ledger__rating { color: var(--stamp); font-weight: 700; letter-spacing: 0.18em; }
+.ledger__divider { border: 0; border-top: 1.5px dashed var(--ink-faded); margin: 14px -8px; }
+
+/* Dining-history phone mockup (replaces the paper-receipt ledger stage) */
+.ledger__phone-stage { display: flex; justify-content: center; align-items: center; }
+.phone__hist-head {
+  text-align: center;
+  font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  font-size: 10px; font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.phone__hist-meta {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 8px; color: var(--ink-faded);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.phone__hist-row {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  gap: 8px; align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px dashed var(--ink-faded);
+  font-family: var(--font-mono);
+}
+.phone__hist-date {
+  font-weight: 700; color: var(--ink);
+  font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.phone__hist-where {
+  color: var(--ink); font-size: 9px;
+  line-height: 1.3; letter-spacing: 0.02em; text-transform: uppercase;
+}
+.phone__hist-where small {
+  display: block;
+  color: var(--ink-faded); font-size: 8px;
+  margin-top: 2px; letter-spacing: 0.04em;
+}
+.phone__hist-stars {
+  color: var(--stamp); font-size: 10px;
+  letter-spacing: -0.04em; white-space: nowrap;
+}
+.phone__hist-summary {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--ink-faded); letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 0;
+}
+.phone__hist-summary--top {
+  color: var(--ink);
+  font-family: var(--font-display); font-style: italic;
+  font-weight: 900; font-size: 13px;
+  letter-spacing: -0.01em; text-transform: none;
+}
+.phone__hist-footer {
+  text-align: center;
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--ink-faded); letter-spacing: 0.12em; text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* ---------- verification thesis ---------- */
+.thesis {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 120px 0;
+  position: relative; overflow: hidden;
+}
+.thesis::before, .thesis::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 14px;
+  background: radial-gradient(circle at 7px 14px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 14px repeat-x;
+}
+.thesis::before { top: -1px; }
+.thesis::after  { bottom: -1px; transform: scaleY(-1); }
+.thesis__inner { position: relative; z-index: 2; }
+.thesis .eyebrow { color: var(--paper-deep); }
+.thesis .eyebrow::before { background: var(--paper-deep); }
+.thesis__title {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+  line-height: 0.9; letter-spacing: -0.035em;
+  margin: 16px 0 32px; max-width: 18ch;
+}
+.thesis__title em { font-style: italic; color: var(--night-stamp); font-weight: 400; }
+.thesis__body {
+  display: grid; grid-template-columns: 1fr; gap: 32px;
+  font-size: var(--t-md); color: var(--paper-deep);
+  max-width: 70ch;
+}
+.thesis__watermark {
+  position: absolute; right: -3%; top: 30%;
+  font-family: var(--font-display); font-style: italic;
+  font-weight: 900; font-size: clamp(10rem, 26vw, 22rem);
+  color: rgba(244,237,224,0.04);
+  letter-spacing: -0.04em; line-height: 1;
+  user-select: none; pointer-events: none;
+}
+
+/* ---------- comparison receipt ---------- */
+.compare { padding: 120px 0; }
+.compare__head { text-align: center; max-width: 720px; margin: 0 auto 64px; }
+.compare__head .lede { margin: 24px auto 0; }
+.compare__table {
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  position: relative;
+  padding: 36px 28px 32px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+.compare__table::before, .compare__table::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 12px;
+  background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+}
+.compare__table::before { top: -10px; }
+.compare__table::after  { bottom: -10px; transform: scaleY(-1); }
+
+.compare__title {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: var(--t-lg); letter-spacing: -0.02em;
+  text-align: center;
+}
+.compare__sub {
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-faded); text-align: center; margin-top: 6px;
+}
+.compare__divider { border: 0; border-top: 1.5px dashed var(--ink-faded); margin: 24px -8px; }
+
+.compare__row {
+  display: grid;
+  grid-template-columns: 1.6fr minmax(60px, 0.7fr) minmax(80px, 0.9fr);
+  gap: 16px;
+  padding: 14px 0;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--t-sm);
+}
+.compare__row + .compare__row { border-top: 1px dashed var(--ink-ghost); }
+.compare__row--head {
+  font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--ink-faded); border-top: 0;
+}
+.compare__row--head > * { font-weight: 700; }
+.compare__cell { text-align: center; }
+.compare__cell:first-child { text-align: left; color: var(--ink); }
+.compare__cell--cipta {
+  color: var(--stamp); font-weight: 700;
+}
+.compare__cell--no { color: var(--ink-faded); }
+.compare__cell--ok { color: var(--ink); }
+.compare__row--total {
+  margin-top: 12px;
+  border-top: 1.5px solid var(--ink) !important;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: var(--t-md); letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.compare__row--total .compare__cell { font-family: var(--font-display); }
+.compare__row--total .compare__cell--cipta { color: var(--stamp); }
+
+/* ---------- restaurant owners ---------- */
+.owners {
+  background: var(--paper-warm);
+  border-block: 1.5px solid var(--ink);
+  padding: 120px 0;
+}
+.owners__grid { display: grid; gap: 64px; align-items: center; grid-template-columns: 1fr; }
+@media (min-width: 1024px) { .owners__grid { grid-template-columns: 1fr 1fr; gap: 96px; } }
+.owners__list { display: grid; gap: 14px; margin: 32px 0; padding: 0; list-style: none; }
+.owners__list li {
+  display: flex; gap: 14px; align-items: baseline;
+  font-family: var(--font-mono); font-size: var(--t-sm);
+  letter-spacing: 0.04em;
+  border-bottom: 1px dashed var(--ink-faded);
+  padding-bottom: 10px;
+}
+.owners__list li::before {
+  content: "✓"; color: var(--stamp); font-weight: 700;
+  font-family: var(--font-mono);
+}
+.owners__pin {
+  background: var(--paper); border: 1.5px solid var(--ink);
+  padding: 32px; box-shadow: var(--shadow-paper);
+  position: relative;
+}
+.owners__pin::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 12px;
+  background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper-warm) 7.5px) 0 0 / 14px 12px repeat-x;
+}
+.owners__pin h4 {
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faded);
+  margin: 0 0 12px;
+}
+.owners__pin blockquote {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--t-md);
+  line-height: 1.35; letter-spacing: -0.01em;
+  margin: 0 0 18px;
+}
+.owners__pin cite {
+  font-style: normal;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ---------- early access CTA ---------- */
+.cta {
+  position: relative;
+  padding: 140px 0;
+  text-align: center;
+  overflow: hidden;
+}
+.cta__inner { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; padding: 0 24px; }
+.cta__title {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  line-height: 0.9; letter-spacing: -0.035em;
+  margin: 16px 0 24px;
+}
+.cta__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+.cta__lede { max-width: 50ch; margin: 0 auto 40px; color: var(--ink-soft); }
+.cta__form {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+  max-width: 540px; margin: 0 auto;
+}
+.cta__input {
+  flex: 1 1 280px;
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--r-sm);
+  padding: 16px 20px;
+  font-family: var(--font-mono); font-size: var(--t-sm);
+  color: var(--ink);
+}
+.cta__input::placeholder { color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.14em; }
+.cta__input:focus { outline: 2px solid var(--stamp); outline-offset: 2px; }
+.cta__submit {
+  background: var(--ink); color: var(--paper);
+  border: 1.5px solid var(--ink);
+  padding: 16px 24px; border-radius: var(--r-sm);
+  font-family: var(--font-mono); font-weight: 700;
+  font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.18em;
+  cursor: pointer;
+  transition: transform 160ms, box-shadow 160ms;
+}
+.cta__submit:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 0 var(--stamp); }
+.cta__fineprint {
+  margin-top: 24px;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faded);
+}
+.cta__watermark {
+  position: absolute; left: 50%; bottom: -18%; transform: translateX(-50%);
+  font-family: var(--font-display); font-style: italic; font-weight: 900;
+  font-size: clamp(12rem, 36vw, 28rem);
+  color: rgba(26,20,16,0.04);
+  line-height: 1; letter-spacing: -0.04em;
+  user-select: none; pointer-events: none;
+}
+
+/* ---------- footer ---------- */
+.foot {
+  border-top: 1.5px solid var(--ink);
+  padding: 64px 24px 40px;
+}
+.foot__grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr; gap: 32px;
+}
+@media (min-width: 768px) { .foot__grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+.foot__brand { font-family: var(--font-display); font-style: italic; font-weight: 900; font-size: var(--t-2xl); letter-spacing: -0.03em; line-height: 1; }
+.foot__tag { font-family: var(--font-mono); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-faded); max-width: 36ch; margin-top: 16px; }
+.foot__col h4 { font-family: var(--font-mono); font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.18em; color: var(--ink-soft); margin: 0 0 16px; }
+.foot__col a { display: block; font-size: var(--t-sm); color: var(--ink); padding: 4px 0; }
+.foot__col a:hover { color: var(--stamp); }
+.foot__legal {
+  max-width: 1200px; margin: 48px auto 0;
+  border-top: 1.5px dashed var(--ink-faded); padding-top: 20px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink-faded);
+}
+</style>
+
+<!-- =========================================================
+     PRE-LAUNCH OVERRIDES — added 2026-04-26 for Toast partner deploy.
+     Hides every element that would falsely imply the app is live on
+     iOS / Android. To revert when the apps actually ship, delete the
+     entire <style id="cipta-prelaunch-overrides"> block below.
+     ========================================================= -->
+<style id="cipta-prelaunch-overrides">
+  .store-badges,
+  .install-bar,
+  .nav__cta,
+  .ledger__cta,
+  .hero__proof,
+  #download {
+    display: none !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============= NAV ============= -->
+<header class="nav">
+  <a class="nav__brand" href="#top">Cipta</a>
+  <nav class="nav__links" aria-label="primary">
+    <a class="nav__link" href="#how">How it works</a>
+    <a class="nav__link" href="#thesis">Verification</a>
+    <a class="nav__link" href="#compare">Vs. the rest</a>
+    <a class="nav__link" href="#owners">For restaurants</a>
+  </nav>
+  <a class="nav__cta" href="#download">Get the app</a>
+</header>
+
+<!-- ============= TICKER ============= -->
+<div class="ticker" aria-label="cipta thesis">
+  <div class="ticker__track">
+    <span class="ticker__item">The receipt is the review</span>
+    <span class="ticker__item">Per dish, not per restaurant</span>
+    <span class="ticker__item">Backed by the bill</span>
+    <span class="ticker__item">Verified by paper, not opinion</span>
+    <span class="ticker__item">Available on iOS + Android</span>
+    <span class="ticker__item">Free for diners, forever</span>
+    <span class="ticker__item">Built in Dallas–Fort Worth</span>
+    <span class="ticker__item">The receipt is the review</span>
+    <span class="ticker__item">Per dish, not per restaurant</span>
+    <span class="ticker__item">Backed by the bill</span>
+    <span class="ticker__item">Verified by paper, not opinion</span>
+    <span class="ticker__item">Available on iOS + Android</span>
+    <span class="ticker__item">Free for diners, forever</span>
+    <span class="ticker__item">Built in Dallas–Fort Worth</span>
+  </div>
+</div>
+
+<!-- ============= HERO ============= -->
+<section class="hero" id="top">
+  <div class="container">
+    <div class="hero__grid">
+      <div>
+        <p class="eyebrow feed-in feed-in-1">DFW · available on iOS + Android</p>
+        <h1 class="hero__title feed-in feed-in-2">
+          The receipt<br />
+          is the <em>review<span class="hero__title-mark">.</span></em>
+        </h1>
+        <p class="hero__lede feed-in feed-in-3">
+          Cipta counts reviews that come from receipts — per dish, per meal, verified.
+          And every plate you scan becomes part of your own permanent dining record.
+        </p>
+        <div class="hero__ctas feed-in feed-in-4">
+          <div class="store-badges">
+            <!-- TODO(Hermann): replace href with real App Store URL -->
+            <a class="store-badge" href="#" aria-label="Download Cipta on the App Store">
+              <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+              <span class="store-badge__text">
+                <span class="store-badge__small">Download on the</span>
+                <span class="store-badge__big">App Store</span>
+              </span>
+            </a>
+            <!-- TODO(Hermann): replace href with real Google Play URL -->
+            <a class="store-badge" href="#" aria-label="Get Cipta on Google Play">
+              <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+              <span class="store-badge__text">
+                <span class="store-badge__small">Get it on</span>
+                <span class="store-badge__big">Google Play</span>
+              </span>
+            </a>
+          </div>
+          <a class="hero__see" href="#how">See how it works</a>
+        </div>
+        <div class="hero__proof feed-in feed-in-5">
+          <span class="hero__proof-num">DFW.</span>
+          <span class="hero__proof-label">live on iOS + Android · free for diners, forever</span>
+        </div>
+      </div>
+
+      <div class="receipt-stage feed-in feed-in-3" style="display:flex; justify-content: center; align-items: center;">
+        <div class="phone" aria-label="Cipta app verified plate screen — design preview">
+          <div class="phone__notch" aria-hidden="true"></div>
+          <div class="phone__screen">
+            <div class="phone__statusbar">
+              <span>9:41</span>
+              <span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span>
+            </div>
+            <div class="phone__appbar">
+              <span class="phone__appbar-side">←</span>
+              <span class="phone__appbar-title">Verified Plate</span>
+              <span class="phone__appbar-side" style="text-align: right;">⤴</span>
+            </div>
+            <div class="phone__body">
+              <div class="phone__verified-receipt">
+                <div class="phone__verified-store">DEMO BISTRO · DALLAS</div>
+                <div class="phone__verified-meta">[ example · design preview ]</div>
+              </div>
+              <hr class="phone__divider" />
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Barbacoa quesadilla</span><span class="phone__verified-line-stars">★★★★★</span></div>
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Elote (street)</span><span class="phone__verified-line-stars">★★★★<span class="phone__rate-stars-off">★</span></span></div>
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Al pastor (3)</span><span class="phone__verified-line-stars">★★★★★</span></div>
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Tres leches</span><span class="phone__verified-line-stars">★★★<span class="phone__rate-stars-off">★★</span></span></div>
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Margarita</span><span class="phone__verified-line-stars">★★★★<span class="phone__rate-stars-off">★</span></span></div>
+              <hr class="phone__divider" />
+              <div class="phone__verified-total"><span>Plate score</span><span style="color: var(--stamp);">4.4 ★</span></div>
+              <div class="phone__verified-stamp">verified</div>
+            </div>
+            <div class="phone__tabbar">
+              <a class="is-active"><span>★</span>Home</a>
+              <a><span>◎</span>Explore</a>
+              <a><span>≡</span>History</a>
+              <a><span>○</span>Profile</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= SEE IT IN ACTION ============= -->
+<section class="showcase" id="showcase" aria-label="see Cipta in action">
+  <header class="showcase__head">
+    <p class="eyebrow eyebrow--center">See it in action</p>
+    <h2 class="h-section">Three taps,<br />one <em>verified</em> plate.</h2>
+    <p class="lede">A look at what you'll do once Cipta is on your phone.</p>
+  </header>
+
+  <div class="showcase__phones">
+
+    <!-- ===== Phone 1: SCAN ===== -->
+    <div class="showcase__col">
+      <div class="showcase__phone-wrap showcase__phone-wrap--left">
+        <div class="phone" aria-label="scan a receipt — design preview">
+          <div class="phone__notch" aria-hidden="true"></div>
+          <div class="phone__screen">
+            <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
+            <div class="phone__appbar"><span class="phone__appbar-side">×</span><span class="phone__appbar-title">Scan receipt</span><span class="phone__appbar-side" style="text-align:right;">⚙</span></div>
+            <div class="phone__body phone__body--scan">
+              <div class="phone__viewfinder" aria-hidden="true">
+                <div class="phone__viewfinder-store">DEMO BISTRO</div>
+                <div style="font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faded); margin-bottom: 4px;">[ example ]</div>
+                <div class="phone__viewfinder-line"><span>quesadilla</span><span>14.00</span></div>
+                <div class="phone__viewfinder-line"><span>elote</span><span>6.00</span></div>
+                <div class="phone__viewfinder-line"><span>al pastor</span><span>13.00</span></div>
+                <div class="phone__viewfinder-line"><span>tres leches</span><span>8.00</span></div>
+                <div class="phone__viewfinder-line"><span>margarita</span><span>11.00</span></div>
+                <div style="margin-top: 6px; font-weight: 700;">total · 52.00</div>
+              </div>
+              <div class="phone__scan-prompt"><strong>Hold steady.</strong> Auto-capture in 1s</div>
+              <div class="phone__scan-shutter" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="showcase__caption"><strong><span class="showcase__step">01</span>Scan</strong>Snap a photo as you leave</div>
+    </div>
+
+    <!-- ===== Phone 2: RATE ===== -->
+    <div class="showcase__col">
+      <div class="showcase__phone-wrap showcase__phone-wrap--center">
+        <div class="phone" aria-label="rate every dish — design preview">
+          <div class="phone__notch" aria-hidden="true"></div>
+          <div class="phone__screen">
+            <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
+            <div class="phone__appbar"><span class="phone__appbar-side">←</span><span class="phone__appbar-title">Rate dishes</span><span class="phone__appbar-side" style="text-align:right;">·</span></div>
+            <div class="phone__body">
+              <div class="phone__rate-prompt">Tap to rate · 5 dishes</div>
+              <div class="phone__rate-row">
+                <span class="phone__rate-label">Barbacoa quesadilla</span>
+                <span class="phone__rate-stars">★★★★★</span>
+              </div>
+              <div class="phone__rate-row">
+                <span class="phone__rate-label">Elote (street)</span>
+                <span class="phone__rate-stars">★★★★<span class="phone__rate-stars-off">★</span></span>
+              </div>
+              <div class="phone__rate-row">
+                <span class="phone__rate-label">Al pastor (3)</span>
+                <span class="phone__rate-stars">★★★★★</span>
+              </div>
+              <div class="phone__rate-row">
+                <span class="phone__rate-label">Tres leches</span>
+                <span class="phone__rate-stars">★★★<span class="phone__rate-stars-off">★★</span></span>
+              </div>
+              <div class="phone__rate-row">
+                <span class="phone__rate-label">Margarita · spicy</span>
+                <span class="phone__rate-stars">★★★★<span class="phone__rate-stars-off">★</span></span>
+              </div>
+              <div style="margin-top: 18px; padding: 10px 14px; background: var(--ink); color: var(--paper); font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em; text-align: center; font-weight: 700; border-radius: 2px;">Submit plate →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="showcase__caption"><strong><span class="showcase__step">02</span>Rate</strong>One tap per dish, no essay</div>
+    </div>
+
+    <!-- ===== Phone 3: VERIFIED ===== -->
+    <div class="showcase__col">
+      <div class="showcase__phone-wrap showcase__phone-wrap--right">
+        <div class="phone" aria-label="verified plate — design preview">
+          <div class="phone__notch" aria-hidden="true"></div>
+          <div class="phone__screen">
+            <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
+            <div class="phone__appbar"><span class="phone__appbar-side">←</span><span class="phone__appbar-title">Verified Plate</span><span class="phone__appbar-side" style="text-align:right;">⤴</span></div>
+            <div class="phone__body">
+              <div class="phone__verified-receipt">
+                <div class="phone__verified-store">DEMO BISTRO · DALLAS</div>
+                <div class="phone__verified-meta">[ example · design preview ]</div>
+              </div>
+              <hr class="phone__divider" />
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Barbacoa quesadilla</span><span class="phone__verified-line-stars">★★★★★</span></div>
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Elote (street)</span><span class="phone__verified-line-stars">★★★★<span class="phone__rate-stars-off">★</span></span></div>
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Al pastor (3)</span><span class="phone__verified-line-stars">★★★★★</span></div>
+              <div class="phone__verified-line"><span class="phone__verified-line-name">Tres leches</span><span class="phone__verified-line-stars">★★★<span class="phone__rate-stars-off">★★</span></span></div>
+              <hr class="phone__divider" />
+              <div class="phone__verified-total"><span>Plate score</span><span style="color: var(--stamp);">4.4 ★</span></div>
+              <div class="phone__verified-stamp">verified</div>
+            </div>
+            <div class="phone__tabbar">
+              <a class="is-active"><span>★</span>Home</a>
+              <a><span>◎</span>Explore</a>
+              <a><span>≡</span>History</a>
+              <a><span>○</span>Profile</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="showcase__caption"><strong><span class="showcase__step">03</span>Verified</strong>Joins your record. Public if you want it.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============= STATS ============= -->
+<section class="stats" aria-label="key numbers">
+  <div class="container">
+    <div class="stats__grid">
+      <div>
+        <div class="stat__num">Per dish.</div>
+        <div class="stat__label">Not per-restaurant</div>
+      </div>
+      <div>
+        <div class="stat__num">Per receipt.</div>
+        <div class="stat__label">Backed by the bill</div>
+      </div>
+      <div>
+        <div class="stat__num">DFW.</div>
+        <div class="stat__label">Live on iOS + Android</div>
+      </div>
+      <div>
+        <div class="stat__num">$0</div>
+        <div class="stat__label">Free for diners, forever</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= HOW IT WORKS ============= -->
+<section class="how" id="how">
+  <div class="container">
+    <header class="how__head">
+      <div>
+        <p class="eyebrow">From dinner to verified plate</p>
+        <h2 class="h-section">Three steps.<br /><em>No noise.</em></h2>
+      </div>
+      <p class="lede" style="margin: 0;">An honest review takes about a minute. It counts because you actually ate the meal — not because you scrolled to "leave a review."</p>
+    </header>
+
+    <div class="how__list">
+      <div class="how__item">
+        <div class="how__num">01</div>
+        <div class="how__copy">
+          <h3>Scan the receipt.</h3>
+          <p>Snap a photo as you leave. Cipta pulls every dish, line by line — no typing, no guessing what you ordered, no recall fade three days later.</p>
+        </div>
+        <div class="how__tag">~ 8 sec</div>
+      </div>
+
+      <div class="how__item">
+        <div class="how__num">02</div>
+        <div class="how__copy">
+          <h3>Rate every dish.</h3>
+          <p>Star each item. Drop a one-line note if it's worth it. We rate the food, not the restaurant — averaging plates is how truth dies.</p>
+        </div>
+        <div class="how__tag">~ 40 sec</div>
+      </div>
+
+      <div class="how__item">
+        <div class="how__num">03</div>
+        <div class="how__copy">
+          <h3>Earn a verified plate.</h3>
+          <p>Stamped, dated, public. Your review enters the record so other diners can find what's worth eating.</p>
+        </div>
+        <div class="how__tag">forever</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= PERSONAL LEDGER  ============= -->
+<section class="ledger" id="ledger">
+  <div class="container">
+    <div class="ledger__grid">
+      <div class="ledger__copy">
+        <p class="eyebrow">For you, day one</p>
+        <h2 class="h-section">Your meals,<br /><em>on the record.</em></h2>
+        <p class="lede">
+          Cipta isn't only for the next diner. Every receipt you scan becomes part of <em>your own</em> verified
+          dining history — what you ate, where you ate it, and how good it actually was. The only food log
+          that doesn't depend on memory.
+        </p>
+        <ul class="ledger__uses" aria-label="things your record can answer">
+          <li>What was that pasta I had last August?</li>
+          <li>What's my actual top-rated dish of all time?</li>
+          <li>Where did I have the mole I couldn't stop thinking about?</li>
+          <li>Have I tried this place before — did I like it?</li>
+        </ul>
+        <a class="ledger__cta" href="#download">Get the app to start your record →</a>
+      </div>
+
+      <aside class="ledger__phone-stage" aria-hidden="true">
+        <div class="phone" aria-label="Cipta dining history — design preview">
+          <div class="phone__notch" aria-hidden="true"></div>
+          <div class="phone__screen">
+            <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
+            <div class="phone__appbar">
+              <span class="phone__appbar-side">←</span>
+              <span class="phone__appbar-title">History</span>
+              <span class="phone__appbar-side" style="text-align:right;">≡</span>
+            </div>
+            <div class="phone__body">
+              <div class="phone__hist-head">YOUR DINING HISTORY</div>
+              <div class="phone__hist-meta">[ tracking begins on first scan ]</div>
+
+              <div class="phone__hist-row">
+                <span class="phone__hist-date">Dec 12</span>
+                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
+                <span class="phone__hist-stars">★★★★★</span>
+              </div>
+              <div class="phone__hist-row">
+                <span class="phone__hist-date">Nov 30</span>
+                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
+                <span class="phone__hist-stars">★★★★<span class="phone__rate-stars-off">★</span></span>
+              </div>
+              <div class="phone__hist-row">
+                <span class="phone__hist-date">Nov 22</span>
+                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
+                <span class="phone__hist-stars">★★★★★</span>
+              </div>
+              <div class="phone__hist-row">
+                <span class="phone__hist-date">Nov 14</span>
+                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
+                <span class="phone__hist-stars">★★★<span class="phone__rate-stars-off">★★</span></span>
+              </div>
+              <div class="phone__hist-row">
+                <span class="phone__hist-date">Nov 02</span>
+                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
+                <span class="phone__hist-stars">★★★★★</span>
+              </div>
+
+              <div style="margin-top: 12px;">
+                <div class="phone__hist-summary phone__hist-summary--top">
+                  <span>Top dish · 2025</span>
+                  <span style="font-family: var(--font-mono); font-size: 8px; color: var(--ink-faded); letter-spacing: 0.12em; text-transform: uppercase; font-style: normal; font-weight: 600;">[ revealed ]</span>
+                </div>
+                <div class="phone__hist-summary">
+                  <span>Plates verified</span>
+                  <span>[ count ]</span>
+                </div>
+              </div>
+
+              <div class="phone__hist-footer">cipta · your record · #CPT-YOU</div>
+            </div>
+            <div class="phone__tabbar">
+              <a><span>★</span>Home</a>
+              <a><span>◎</span>Explore</a>
+              <a class="is-active"><span>≡</span>History</a>
+              <a><span>○</span>Profile</a>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============= VERIFICATION THESIS ============= -->
+<section class="thesis" id="thesis">
+  <div class="container thesis__inner">
+    <p class="eyebrow">Why receipts</p>
+    <h2 class="thesis__title">Anyone can leave a review.<br /><em>Almost no one</em> can prove they ate the meal.</h2>
+    <div class="thesis__body">
+      <p>Today's review apps let almost anyone rate almost anything — including dishes they never ordered, restaurants they've never been to, and meals AI invented for them.</p>
+      <p>Cipta starts with a receipt — a timestamp, a table, the dishes you actually paid for. Then it asks one thing: how was each one? Four verification layers, no opinions about parking or the wallpaper.</p>
+      <p style="color: var(--paper);"><strong>Per dish. Per meal. Backed by the bill.</strong></p>
+    </div>
+  </div>
+  <div class="thesis__watermark" aria-hidden="true">verified</div>
+</section>
+
+<!-- ============= COMPARISON ============= -->
+<section class="compare" id="compare">
+  <div class="container">
+    <header class="compare__head">
+      <p class="eyebrow eyebrow--center">The receipt strip</p>
+      <h2 class="h-section">Side by <em>side.</em></h2>
+      <p class="lede">How Cipta compares to today's leading review apps.</p>
+    </header>
+
+    <div class="compare__table">
+      <div class="compare__title">CIPTA · COMPARISON RECEIPT</div>
+      <div class="compare__sub">DFW · 04/25/26 · ref CPT-CMP</div>
+      <hr class="compare__divider" />
+
+      <div class="compare__row compare__row--head">
+        <div class="compare__cell">Item</div>
+        <div class="compare__cell">Cipta</div>
+        <div class="compare__cell">Today's review apps</div>
+      </div>
+
+      <div class="compare__row">
+        <div class="compare__cell">Receipt-verified rating</div>
+        <div class="compare__cell compare__cell--cipta">✓</div>
+        <div class="compare__cell compare__cell--no">—</div>
+      </div>
+      <div class="compare__row">
+        <div class="compare__cell">Per-dish, not per-restaurant</div>
+        <div class="compare__cell compare__cell--cipta">✓</div>
+        <div class="compare__cell compare__cell--no">—</div>
+      </div>
+      <div class="compare__row">
+        <div class="compare__cell">Resistant to AI-generated reviews</div>
+        <div class="compare__cell compare__cell--cipta">✓</div>
+        <div class="compare__cell compare__cell--no">—</div>
+      </div>
+      <div class="compare__row">
+        <div class="compare__cell">No paid placement or removal</div>
+        <div class="compare__cell compare__cell--cipta">✓</div>
+        <div class="compare__cell">varies</div>
+      </div>
+      <div class="compare__row">
+        <div class="compare__cell">Free for diners</div>
+        <div class="compare__cell compare__cell--cipta">✓</div>
+        <div class="compare__cell compare__cell--ok">✓</div>
+      </div>
+      <div class="compare__row">
+        <div class="compare__cell">Built around the bill</div>
+        <div class="compare__cell compare__cell--cipta">✓</div>
+        <div class="compare__cell compare__cell--no">—</div>
+      </div>
+
+      <div class="compare__row compare__row--total">
+        <div class="compare__cell">Verified items</div>
+        <div class="compare__cell compare__cell--cipta">6 / 6</div>
+        <div class="compare__cell">1 / 6</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= RESTAURANT OWNERS ============= -->
+<section class="owners" id="owners">
+  <div class="container">
+    <div class="owners__grid">
+      <div>
+        <p class="eyebrow">For restaurants</p>
+        <h2 class="h-section">Reviews you can <em>stand behind.</em></h2>
+        <p class="lede" style="margin-top: 24px;">Every Cipta review is tied to a real meal at your restaurant. You can answer the dish — or hang the verified plate on the wall.</p>
+        <ul class="owners__list">
+          <li>Every review tied to a verified bill from your restaurant.</li>
+          <li>Per-dish data — see exactly which items diners loved or didn't.</li>
+          <li>No paid removals, no anonymous review bombs.</li>
+          <li>Free dashboard, free claim, free always.</li>
+        </ul>
+        <a class="btn btn--ink" href="#early-access">Claim your restaurant →</a>
+      </div>
+
+      <aside class="owners__pin">
+        <h4>What a Cipta review tells you</h4>
+        <blockquote>Per-dish ratings tied to the bill, not vague restaurant averages. You see exactly which item the diner loved or didn't — and you can answer the dish, not the algorithm.</blockquote>
+        <cite>— how the restaurant view works</cite>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============= DOWNLOAD CTA ============= -->
+<section class="cta" id="download">
+  <div class="cta__inner">
+    <p class="eyebrow eyebrow--center">Tear here</p>
+    <h2 class="cta__title">Free in DFW.<br />Live on <em>iOS + Android.</em></h2>
+    <p class="cta__lede">Scan a receipt, rate every dish, build the only food log that's actually verified by the bill.</p>
+    <div class="store-badges" style="justify-content: center; margin-top: 8px;">
+      <!-- TODO(Hermann): replace href with real App Store URL -->
+      <a class="store-badge store-badge--paper" href="#" aria-label="Download Cipta on the App Store">
+        <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+        <span class="store-badge__text">
+          <span class="store-badge__small">Download on the</span>
+          <span class="store-badge__big">App Store</span>
+        </span>
+      </a>
+      <!-- TODO(Hermann): replace href with real Google Play URL -->
+      <a class="store-badge store-badge--paper" href="#" aria-label="Get Cipta on Google Play">
+        <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+        <span class="store-badge__text">
+          <span class="store-badge__small">Get it on</span>
+          <span class="store-badge__big">Google Play</span>
+        </span>
+      </a>
+    </div>
+    <p class="cta__fineprint" style="margin-top: 32px;">Free for diners, forever · No ads · No paid placement</p>
+  </div>
+  <div class="cta__watermark" aria-hidden="true">cipta</div>
+</section>
+
+<!-- ============= FOOTER ============= -->
+<footer class="foot">
+  <div class="foot__grid">
+    <div>
+      <div class="foot__brand">Cipta</div>
+      <p class="foot__tag">The receipt is the review. Built in Dallas–Fort Worth.</p>
+      <div class="store-badges" style="margin-top: 24px;">
+        <!-- TODO(Hermann): replace href with real App Store URL -->
+        <a class="store-badge" href="#" aria-label="Download Cipta on the App Store">
+          <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+          <span class="store-badge__text">
+            <span class="store-badge__small">Download on the</span>
+            <span class="store-badge__big">App Store</span>
+          </span>
+        </a>
+        <!-- TODO(Hermann): replace href with real Google Play URL -->
+        <a class="store-badge" href="#" aria-label="Get Cipta on Google Play">
+          <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+          <span class="store-badge__text">
+            <span class="store-badge__small">Get it on</span>
+            <span class="store-badge__big">Google Play</span>
+          </span>
+        </a>
+      </div>
+    </div>
+    <div class="foot__col">
+      <h4>Product</h4>
+      <a href="#how">How it works</a>
+      <a href="#ledger">Your record</a>
+      <a href="#thesis">Verification</a>
+      <a href="#compare">Comparison</a>
+    </div>
+    <div class="foot__col">
+      <h4>Restaurants</h4>
+      <a href="#owners">For owners</a>
+      <a href="#download">Claim listing</a>
+      <a href="#">Press kit</a>
+    </div>
+    <div class="foot__col">
+      <h4>Company</h4>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+      <a href="#">Privacy</a>
+    </div>
+  </div>
+  <div class="foot__legal">
+    <span>© 2026 Cipta · DFW</span>
+    <span>The receipt is the review · #CPT-V1</span>
+  </div>
+</footer>
+
+<!-- ============= STICKY MOBILE INSTALL BAR ============= -->
+<aside class="install-bar" aria-label="install Cipta">
+  <div class="install-bar__copy">
+    Free in DFW
+    <strong>Get Cipta</strong>
+  </div>
+  <div class="install-bar__ctas">
+    <!-- TODO(Hermann): replace href with real App Store URL -->
+    <a class="install-bar__btn" href="#" aria-label="Download on the App Store">
+      <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+      iOS
+    </a>
+    <!-- TODO(Hermann): replace href with real Google Play URL -->
+    <a class="install-bar__btn" href="#" aria-label="Get it on Google Play">
+      <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
+      Android
+    </a>
+  </div>
+</aside>
+
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Cipta — Your record</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<link rel="stylesheet" href="cipta.css" />
+<style>
+  body { padding-bottom: 80px; }
+
+  main {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+  }
+
+  .heading { margin-bottom: 24px; }
+  .heading__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .heading__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+  }
+  .heading__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .heading__sub {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+    margin: 0;
+  }
+
+  .search {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--paper-warm);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    padding: 10px 14px;
+    margin-bottom: 24px;
+  }
+  .search input {
+    flex: 1;
+    background: transparent;
+    border: 0; outline: 0;
+    font-family: var(--font-body);
+    font-size: var(--t-sm);
+    color: var(--ink);
+  }
+  .search input::placeholder { color: var(--ink-faded); }
+  .search__glyph {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+
+  .stat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    margin-bottom: 28px;
+  }
+  .stat {
+    text-align: center;
+    padding: 16px 8px;
+  }
+  .stat + .stat { border-left: 1px dotted var(--ink-faded); }
+  .stat__num {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 1;
+    color: var(--ink);
+  }
+  .stat__label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+    margin-top: 8px;
+  }
+
+  /* the empty-state ledger — a paper artifact saying "begin your record" */
+  .empty {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 36px 24px 28px;
+    position: relative;
+    box-shadow: var(--shadow-paper);
+    margin-bottom: 28px;
+  }
+  .empty::before, .empty::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 12px;
+    background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+  }
+  .empty::before { top: -10px; }
+  .empty::after { bottom: -10px; transform: scaleY(-1); }
+
+  .empty__head {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+    padding-bottom: 14px;
+    border-bottom: 1.5px dashed var(--ink-faded);
+    margin-bottom: 18px;
+  }
+  .empty__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-lg);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    text-align: center;
+    margin: 0 0 14px;
+  }
+  .empty__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .empty__rows {
+    display: grid; gap: 10px;
+    margin-bottom: 22px;
+  }
+  .empty__row {
+    display: flex; align-items: baseline; gap: 8px;
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    color: var(--ink-faded);
+  }
+  .empty__row-name { white-space: nowrap; color: var(--ink-soft); }
+  .empty__row-leader {
+    flex: 1 1 auto;
+    border-bottom: 1.5px dotted var(--ink-faded);
+    transform: translateY(-4px);
+    min-width: 24px;
+  }
+  .empty__row-stars { color: var(--paper-deep); letter-spacing: 0.16em; }
+  .empty__cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--ink); color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: var(--r-sm);
+    padding: 12px 22px;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    margin: 0 auto;
+    width: 100%;
+    text-align: center;
+    transition: transform 160ms, box-shadow 160ms;
+  }
+  .empty__cta:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 0 var(--stamp);
+  }
+
+  .preview-note {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+    margin: 0 0 14px;
+  }
+
+  /* what your populated history will look like — with placeholders, faded */
+  .preview {
+    opacity: 0.55;
+    background: var(--paper);
+    border: 1.5px dashed var(--ink-faded);
+    padding: 22px 20px;
+  }
+  .preview__group { margin-bottom: 16px; }
+  .preview__group:last-child { margin-bottom: 0; }
+  .preview__group-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1.5px dashed var(--ink-faded);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+  .preview__city {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-base);
+    letter-spacing: -0.005em;
+  }
+  .preview__count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+  }
+  .preview__row {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 10px;
+    padding: 6px 0;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+  }
+  .preview__date {
+    color: var(--ink-faded);
+    font-size: var(--t-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .preview__where small {
+    display: block;
+    color: var(--ink-faded);
+    font-size: var(--t-xs);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+  .preview__stars { color: var(--stamp); letter-spacing: 0.16em; font-weight: 700; }
+</style>
+</head>
+<body class="cipta-shell">
+
+<header class="cipta-topbar">
+  <a class="cipta-topbar__brand" href="dashboard.html">Cipta</a>
+  <div class="cipta-topbar__title">Your record</div>
+  <a class="cipta-topbar__action" href="profile.html">Profile</a>
+</header>
+
+<main>
+  <div class="heading feed-in feed-in-1">
+    <p class="heading__eyebrow">All your verified plates</p>
+    <h1 class="heading__title">Your dining<br /><em>history.</em></h1>
+    <p class="heading__sub">Backed by paper · yours forever</p>
+  </div>
+
+  <div class="search feed-in feed-in-2">
+    <span class="search__glyph">🔎</span>
+    <input type="text" placeholder="Find a plate, dish, or restaurant…" />
+  </div>
+
+  <div class="stat-row feed-in feed-in-2">
+    <div class="stat">
+      <div class="stat__num">0</div>
+      <div class="stat__label">Plates verified</div>
+    </div>
+    <div class="stat">
+      <div class="stat__num">0</div>
+      <div class="stat__label">Restaurants</div>
+    </div>
+    <div class="stat">
+      <div class="stat__num">—</div>
+      <div class="stat__label">Avg score</div>
+    </div>
+  </div>
+
+  <article class="empty feed-in feed-in-3">
+    <div class="empty__head">YOUR DINING HISTORY · BLANK SLATE</div>
+    <h2 class="empty__title">Your record begins<br /><em>with the first scan.</em></h2>
+
+    <div class="empty__rows">
+      <div class="empty__row">
+        <span class="empty__row-name">[ first scan ]</span>
+        <span class="empty__row-leader"></span>
+        <span class="empty__row-stars">★★★★★</span>
+      </div>
+      <div class="empty__row">
+        <span class="empty__row-name">[ second scan ]</span>
+        <span class="empty__row-leader"></span>
+        <span class="empty__row-stars">★★★★★</span>
+      </div>
+      <div class="empty__row">
+        <span class="empty__row-name">[ third scan ]</span>
+        <span class="empty__row-leader"></span>
+        <span class="empty__row-stars">★★★★★</span>
+      </div>
+    </div>
+
+    <a class="empty__cta" href="scan_receipt.html">Scan a receipt →</a>
+  </article>
+
+  <p class="preview-note">— Once you start scanning, plates appear here, grouped by city —</p>
+
+  <article class="preview" aria-label="preview of populated history">
+    <div class="preview__group">
+      <div class="preview__group-head">
+        <div class="preview__city">[ city ]</div>
+        <div class="preview__count">[ # plates ]</div>
+      </div>
+      <div class="preview__row">
+        <span class="preview__date">— —</span>
+        <span class="preview__where">[ restaurant ]<small>[ specific dish ]</small></span>
+        <span class="preview__stars">★★★★★</span>
+      </div>
+      <div class="preview__row">
+        <span class="preview__date">— —</span>
+        <span class="preview__where">[ restaurant ]<small>[ specific dish ]</small></span>
+        <span class="preview__stars">★★★★☆</span>
+      </div>
+    </div>
+    <div class="preview__group">
+      <div class="preview__group-head">
+        <div class="preview__city">[ city ]</div>
+        <div class="preview__count">[ # plates ]</div>
+      </div>
+      <div class="preview__row">
+        <span class="preview__date">— —</span>
+        <span class="preview__where">[ restaurant ]<small>[ specific dish ]</small></span>
+        <span class="preview__stars">★★★★★</span>
+      </div>
+    </div>
+  </article>
+</main>
+
+<nav class="cipta-tabbar fixed bottom-0" aria-label="primary">
+  <a href="dashboard.html" data-icon="home"><span class="tab__glyph">▥</span><span>Home</span></a>
+  <a href="plate_history.html" data-icon="history" class="is-active"><span class="tab__glyph">≡</span><span>History</span></a>
+  <a href="taste_favorites.html" data-icon="restaurant_menu"><span class="tab__glyph">★</span><span>Taste</span></a>
+  <a href="profile.html" data-icon="person"><span class="tab__glyph">○</span><span>Profile</span></a>
+</nav>
+
+<script src="cipta.js" defer></script>
+</body>
+</html>

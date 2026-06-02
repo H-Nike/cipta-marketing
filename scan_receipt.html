@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Cipta — Scan receipt</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<link rel="stylesheet" href="cipta.css" />
+<style>
+  body { padding-bottom: 80px; }
+
+  main {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+  }
+
+  .heading {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .heading__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .heading__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+  }
+  .heading__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .heading__sub {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+    max-width: 32ch;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* viewfinder framed like a phone-camera capture, paper-style */
+  .viewfinder {
+    aspect-ratio: 3 / 4;
+    background: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: var(--r-md);
+    margin: 0 auto 24px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    max-width: 360px;
+  }
+  .viewfinder__inner {
+    position: absolute; inset: 24px;
+    background: var(--paper);
+    border: 1.5px solid var(--paper-deep);
+    display: flex; flex-direction: column;
+    padding: 18px 16px;
+    gap: 6px;
+    overflow: hidden;
+  }
+  .viewfinder__store {
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-md);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .viewfinder__addr {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+    margin-bottom: 8px;
+  }
+  .viewfinder__line {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink);
+    border-bottom: 1px dotted var(--ink-faded);
+    padding: 3px 0;
+  }
+  .viewfinder__total {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-md);
+    letter-spacing: -0.01em;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1.5px dashed var(--ink-faded);
+    color: var(--stamp);
+    text-transform: uppercase;
+  }
+  /* corner brackets */
+  .viewfinder__inner::before, .viewfinder__inner::after {
+    content: ""; position: absolute;
+    width: 22px; height: 22px;
+    border: 2.5px solid var(--stamp);
+  }
+  .viewfinder__inner::before {
+    top: -2px; left: -2px;
+    border-right: 0; border-bottom: 0;
+  }
+  .viewfinder__inner::after {
+    bottom: -2px; right: -2px;
+    border-left: 0; border-top: 0;
+  }
+  /* scanning line — moves down on hover/tap */
+  .viewfinder__scanline {
+    position: absolute;
+    left: 0; right: 0; height: 2px;
+    background: var(--stamp);
+    box-shadow: 0 0 12px rgba(200, 53, 28, 0.7);
+    top: 50%;
+    animation: scanline 3s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 5;
+  }
+  @keyframes scanline {
+    0%   { top: 8%; opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { top: 92%; opacity: 0; }
+  }
+
+  .actions {
+    display: grid; gap: 10px;
+    margin-bottom: 28px;
+  }
+  .btn-stack {
+    width: 100%;
+    padding: 16px 22px;
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    transition: transform 160ms, box-shadow 160ms;
+    display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  .btn-stack--ink {
+    background: var(--ink); color: var(--paper);
+  }
+  .btn-stack--ink:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 0 var(--stamp);
+  }
+  .btn-stack--paper {
+    background: var(--paper-warm); color: var(--ink);
+  }
+  .btn-stack--paper:hover {
+    transform: translate(-1px, -1px);
+    background: var(--paper);
+    box-shadow: 3px 3px 0 0 var(--ink);
+  }
+
+  .tip {
+    background: var(--paper-warm);
+    border: 1.5px solid var(--ink);
+    padding: 18px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .tip__mark {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 900;
+    color: var(--stamp);
+  }
+  .tip__head {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .tip__body {
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
+    margin: 0;
+  }
+</style>
+</head>
+<body class="cipta-shell">
+
+<header class="cipta-topbar">
+  <a class="cipta-topbar__brand" href="dashboard.html">Cipta</a>
+  <div class="cipta-topbar__title">New plate</div>
+  <a class="cipta-topbar__action" href="dashboard.html">Cancel</a>
+</header>
+
+<main>
+  <div class="heading feed-in feed-in-1">
+    <p class="heading__eyebrow">Step 1 of 3</p>
+    <h1 class="heading__title">Scan to <em>review.</em></h1>
+    <p class="heading__sub">Point at the receipt — Cipta reads every line, verifies your plate</p>
+  </div>
+
+  <div class="viewfinder feed-in feed-in-2" data-scan-target>
+    <div class="viewfinder__inner">
+      <div class="viewfinder__store">[ RESTAURANT ]</div>
+      <div class="viewfinder__addr">[ ADDRESS · DATE · TABLE ]</div>
+      <div class="viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+      <div class="viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+      <div class="viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+      <div class="viewfinder__line"><span>[ item ]</span><span>[ $ ]</span></div>
+      <div class="viewfinder__total"><span>Total</span><span>[ $ ]</span></div>
+    </div>
+    <div class="viewfinder__scanline" aria-hidden="true"></div>
+  </div>
+
+  <div class="actions feed-in feed-in-3">
+    <button type="button" class="btn-stack btn-stack--ink"
+            onclick="event.preventDefault(); window.__plateScan && window.__plateScan();">
+      Capture &amp; verify
+    </button>
+    <a class="btn-stack btn-stack--paper" href="manual_entry.html">
+      Or enter manually
+    </a>
+  </div>
+
+  <div class="tip">
+    <div class="tip__mark" aria-hidden="true">i</div>
+    <div>
+      <div class="tip__head">Cipta tip</div>
+      <p class="tip__body">A flat, well-lit receipt scans cleanest — items, prices, timestamp captured in one pass.</p>
+    </div>
+  </div>
+</main>
+
+<nav class="cipta-tabbar fixed bottom-0" aria-label="primary">
+  <a href="dashboard.html" data-icon="home"><span class="tab__glyph">▥</span><span>Home</span></a>
+  <a href="plate_history.html" data-icon="history"><span class="tab__glyph">≡</span><span>History</span></a>
+  <a href="taste_favorites.html" data-icon="restaurant_menu" class="is-active"><span class="tab__glyph">★</span><span>Taste</span></a>
+  <a href="profile.html" data-icon="person"><span class="tab__glyph">○</span><span>Profile</span></a>
+</nav>
+
+<script src="cipta.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Cipta — Your taste</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<link rel="stylesheet" href="cipta.css" />
+<style>
+  body { padding-bottom: 80px; }
+
+  main {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+  }
+
+  .heading { margin-bottom: 28px; }
+  .heading__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .heading__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+  }
+  .heading__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .heading__sub {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* empty-state ledger — your top-rated dishes will appear here */
+  .empty {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 36px 24px 28px;
+    position: relative;
+    box-shadow: var(--shadow-paper);
+    margin-bottom: 28px;
+  }
+  .empty::before, .empty::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 12px;
+    background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+  }
+  .empty::before { top: -10px; }
+  .empty::after { bottom: -10px; transform: scaleY(-1); }
+
+  .empty__head {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+    padding-bottom: 14px;
+    border-bottom: 1.5px dashed var(--ink-faded);
+    margin-bottom: 18px;
+  }
+  .empty__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-lg);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    text-align: center;
+    margin: 0 0 18px;
+  }
+  .empty__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .empty__lede {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: var(--t-sm);
+    line-height: 1.5;
+    margin: 0 0 22px;
+    padding: 0 8px;
+  }
+  .empty__cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--ink); color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: var(--r-sm);
+    padding: 12px 22px;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    width: 100%;
+    text-align: center;
+    transition: transform 160ms, box-shadow 160ms;
+  }
+  .empty__cta:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 0 var(--stamp);
+  }
+
+  .preview-note {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+    margin: 0 0 14px;
+  }
+
+  .preview {
+    opacity: 0.55;
+    background: var(--paper);
+    border: 1.5px dashed var(--ink-faded);
+    padding: 18px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .preview__card {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 14px 14px 12px;
+    position: relative;
+  }
+  .preview__card::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 9px;
+    background: radial-gradient(circle at 6px 9px, transparent 5.5px, var(--paper) 6px) 0 0 / 12px 9px repeat-x;
+  }
+  .preview__store {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faded);
+    margin-bottom: 6px;
+  }
+  .preview__dish {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-sm);
+    letter-spacing: -0.005em;
+    line-height: 1.15;
+    margin: 0 0 10px;
+  }
+  .preview__foot {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px dotted var(--ink-faded);
+    padding-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .preview__stars { color: var(--stamp); letter-spacing: 0.12em; font-weight: 700; }
+  .preview__by { color: var(--ink-faded); letter-spacing: 0.1em; }
+</style>
+</head>
+<body class="cipta-shell">
+
+<header class="cipta-topbar">
+  <a class="cipta-topbar__brand" href="dashboard.html">Cipta</a>
+  <div class="cipta-topbar__title">Your taste</div>
+  <a class="cipta-topbar__action" href="profile.html">Profile</a>
+</header>
+
+<main>
+  <div class="heading feed-in feed-in-1">
+    <p class="heading__eyebrow">Your top-rated dishes</p>
+    <h1 class="heading__title">Built from<br /><em>real receipts.</em></h1>
+    <p class="heading__sub">Earn stars · build your top-dish list</p>
+  </div>
+
+  <article class="empty feed-in feed-in-2">
+    <div class="empty__head">YOUR TASTE PROFILE · BLANK SLATE</div>
+    <h2 class="empty__title">Your favorites grow<br /><em>with every plate.</em></h2>
+    <p class="empty__lede">
+      4-star and 5-star dishes pin themselves here automatically. The list is built
+      from your verified plates — no follows, no algorithm, just what you actually
+      ate and rated.
+    </p>
+    <a class="empty__cta" href="scan_receipt.html">Scan a receipt →</a>
+  </article>
+
+  <p class="preview-note">— A preview of how your taste profile will look —</p>
+
+  <article class="preview" aria-label="preview of populated taste profile">
+    <div class="preview__card">
+      <div class="preview__store">[ restaurant · area ]</div>
+      <h3 class="preview__dish">[ a dish you'd rate 5 stars ]</h3>
+      <div class="preview__foot">
+        <span class="preview__stars">★★★★★</span>
+        <span class="preview__by">— —</span>
+      </div>
+    </div>
+    <div class="preview__card">
+      <div class="preview__store">[ restaurant · area ]</div>
+      <h3 class="preview__dish">[ another favorite ]</h3>
+      <div class="preview__foot">
+        <span class="preview__stars">★★★★★</span>
+        <span class="preview__by">— —</span>
+      </div>
+    </div>
+    <div class="preview__card">
+      <div class="preview__store">[ restaurant · area ]</div>
+      <h3 class="preview__dish">[ a comfort dish ]</h3>
+      <div class="preview__foot">
+        <span class="preview__stars">★★★★☆</span>
+        <span class="preview__by">— —</span>
+      </div>
+    </div>
+    <div class="preview__card">
+      <div class="preview__store">[ restaurant · area ]</div>
+      <h3 class="preview__dish">[ a recent discovery ]</h3>
+      <div class="preview__foot">
+        <span class="preview__stars">★★★★★</span>
+        <span class="preview__by">— —</span>
+      </div>
+    </div>
+  </article>
+</main>
+
+<nav class="cipta-tabbar fixed bottom-0" aria-label="primary">
+  <a href="dashboard.html" data-icon="home"><span class="tab__glyph">▥</span><span>Home</span></a>
+  <a href="plate_history.html" data-icon="history"><span class="tab__glyph">≡</span><span>History</span></a>
+  <a href="taste_favorites.html" data-icon="restaurant_menu" class="is-active"><span class="tab__glyph">★</span><span>Taste</span></a>
+  <a href="profile.html" data-icon="person"><span class="tab__glyph">○</span><span>Profile</span></a>
+</nav>
+
+<script src="cipta.js" defer></script>
+</body>
+</html>

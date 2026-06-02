@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Cipta — Manual entry</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<link rel="stylesheet" href="cipta.css" />
+<style>
+  body { padding-bottom: 80px; }
+
+  main {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+  }
+
+  .heading { margin-bottom: 28px; }
+  .heading__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .heading__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    margin: 0 0 12px;
+  }
+  .heading__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .heading__sub {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .form-card {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 32px 24px 28px;
+    position: relative;
+    box-shadow: var(--shadow-paper);
+    margin-bottom: 24px;
+  }
+  .form-card::before, .form-card::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 12px;
+    background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+  }
+  .form-card::before { top: -10px; }
+  .form-card::after { bottom: -10px; transform: scaleY(-1); }
+
+  .field { margin-bottom: 22px; }
+  .field:last-child { margin-bottom: 0; }
+  .field__label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .field__input {
+    width: 100%;
+    background: var(--paper-warm);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    padding: 14px 16px;
+    font-family: var(--font-body);
+    font-size: var(--t-base);
+    color: var(--ink);
+    transition: background 160ms, box-shadow 160ms;
+  }
+  .field__input:focus {
+    outline: 0;
+    background: var(--paper);
+    box-shadow: 0 0 0 2px var(--stamp);
+    border-color: var(--stamp);
+  }
+  .field__input::placeholder { color: var(--ink-faded); }
+
+  .field__row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+
+  .submit {
+    display: block;
+    width: 100%;
+    background: var(--ink); color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: var(--r-sm);
+    padding: 16px 22px;
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 160ms, box-shadow 160ms;
+    text-align: center;
+    text-decoration: none;
+  }
+  .submit:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 0 var(--stamp);
+  }
+</style>
+</head>
+<body class="cipta-shell">
+
+<header class="cipta-topbar">
+  <a class="cipta-topbar__brand" href="dashboard.html">Cipta</a>
+  <div class="cipta-topbar__title">Manual entry</div>
+  <a class="cipta-topbar__action" href="dashboard.html">Cancel</a>
+</header>
+
+<main>
+  <div class="heading feed-in feed-in-1">
+    <p class="heading__eyebrow">No receipt</p>
+    <h1 class="heading__title">Where did you<br /><em>eat?</em></h1>
+    <p class="heading__sub">Pick the restaurant · then rate the dishes</p>
+  </div>
+
+  <form class="form-card feed-in feed-in-2"
+        onsubmit="event.preventDefault(); window.location.href='mood_selection.html';">
+    <div class="field">
+      <label class="field__label" for="restaurant">Restaurant name</label>
+      <input class="field__input" id="restaurant" name="restaurant" type="text"
+             placeholder="Search a DFW restaurant" autocomplete="off" required />
+    </div>
+
+    <div class="field">
+      <div class="field__row">
+        <div>
+          <label class="field__label" for="city">City</label>
+          <input class="field__input" id="city" type="text" placeholder="Dallas" required />
+        </div>
+        <div>
+          <label class="field__label" for="state">State</label>
+          <input class="field__input" id="state" type="text" placeholder="TX" required />
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="visited">When did you visit?</label>
+      <input class="field__input" id="visited" type="date" required />
+    </div>
+
+    <button type="submit" class="submit">Start review →</button>
+  </form>
+</main>
+
+<nav class="cipta-tabbar fixed bottom-0" aria-label="primary">
+  <a href="dashboard.html" data-icon="home"><span class="tab__glyph">▥</span><span>Home</span></a>
+  <a href="plate_history.html" data-icon="history"><span class="tab__glyph">≡</span><span>History</span></a>
+  <a href="taste_favorites.html" data-icon="restaurant_menu" class="is-active"><span class="tab__glyph">★</span><span>Taste</span></a>
+  <a href="profile.html" data-icon="person"><span class="tab__glyph">○</span><span>Profile</span></a>
+</nav>
+
+<script src="cipta.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cipta — the receipt is the review</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<style>
+  /* ---------- page-local ---------- */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--t-base);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* paper grain over entire body */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    opacity: 0.4; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.16 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* ---------- top nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(244, 237, 224, 0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1.5px solid var(--ink);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    font-size: var(--t-xs);
+    letter-spacing: 0.18em;
+  }
+  .nav__brand {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-style: italic;
+    font-size: var(--t-md);
+    text-transform: none;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .nav__links { display: none; gap: 32px; }
+  @media (min-width: 768px) { .nav__links { display: inline-flex; } }
+  .nav__link { padding: 6px 0; border-bottom: 1.5px solid transparent; transition: border-color 160ms; }
+  .nav__link:hover, .nav__link.is-active { border-color: var(--ink); }
+  .nav__cta {
+    background: var(--ink); color: var(--paper);
+    padding: 10px 16px;
+    border-radius: var(--r-sm);
+    transition: transform 160ms, box-shadow 160ms;
+  }
+  .nav__cta:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 0 var(--ink); }
+
+  /* ---------- ticker (sticky under nav) ---------- */
+  .ticker { border-top: 0; }
+
+  /* ---------- hero ---------- */
+  .hero {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 96px 24px 64px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+  @media (min-width: 1024px) { .hero { grid-template-columns: 1.1fr 1fr; padding: 120px 32px 80px; } }
+
+  .hero__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 12px;
+    margin-bottom: 32px;
+  }
+  .hero__eyebrow::before {
+    content: ""; width: 36px; height: 1.5px; background: var(--ink);
+  }
+  .hero__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(3.5rem, 9vw, 7.5rem);
+    line-height: 0.88;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    margin: 0 0 28px;
+  }
+  .hero__title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--stamp);
+    white-space: nowrap;
+  }
+  .hero__title-mark {
+    transform: translateY(-0.05em) rotate(-3deg);
+    color: var(--stamp);
+    font-style: normal;
+  }
+  .hero__lede {
+    font-family: var(--font-body);
+    font-size: var(--t-md);
+    color: var(--ink-soft);
+    max-width: 36ch;
+    margin: 0 0 40px;
+  }
+  .hero__ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .hero__signin {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    border-bottom: 1.5px solid var(--ink-faded);
+    padding-bottom: 4px;
+    transition: color 160ms, border-color 160ms;
+  }
+  .hero__signin:hover { color: var(--ink); border-color: var(--ink); }
+
+  .hero__proof {
+    margin-top: 56px;
+    display: flex; align-items: center; gap: 18px;
+    border-top: 1.5px dashed var(--ink-faded);
+    padding-top: 24px;
+  }
+  .hero__proof-num {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 1;
+    color: var(--ink);
+  }
+  .hero__proof-label {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--ink-faded);
+    max-width: 16ch;
+  }
+
+  /* ---------- the demo receipt ---------- */
+  .receipt-wrap { position: relative; display: flex; justify-content: center; }
+  .receipt-wrap::after {
+    content: ""; position: absolute; inset: -6% -8%; z-index: -1;
+    background: radial-gradient(closest-side, rgba(200,53,28,0.10), transparent 70%);
+  }
+  .receipt {
+    width: min(420px, 100%);
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    box-shadow: var(--shadow-lift);
+    padding: 40px 32px 28px;
+    position: relative;
+    transform: rotate(-1.4deg);
+    transition: transform 600ms cubic-bezier(.2,.7,.2,1);
+  }
+  .receipt:hover { transform: rotate(0deg); }
+
+  /* tear top */
+  .receipt::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -10px; height: 12px;
+    background:
+      radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+  }
+  /* tear bottom */
+  .receipt::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 12px;
+    background:
+      radial-gradient(circle at 7px 0, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+  }
+
+  .receipt__head { text-align: center; margin-bottom: 24px; }
+  .receipt__store {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-lg);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .receipt__addr {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+  }
+  .receipt__meta-row {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    margin-top: 14px;
+  }
+
+  .receipt__divider {
+    border: 0; height: 0;
+    border-top: 1.5px dashed var(--ink-faded);
+    margin: 18px -16px;
+  }
+
+  .receipt__items { display: grid; gap: 14px; padding: 4px 0; }
+  .receipt__total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 14px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-md);
+    letter-spacing: -0.01em;
+  }
+  .receipt__total .stars { font-family: var(--font-mono); font-size: var(--t-md); }
+
+  .receipt__stamp-anchor {
+    position: absolute; right: 18px; top: 22px;
+  }
+  .receipt__footer {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    margin-top: 18px;
+  }
+  .receipt__barcode {
+    margin: 14px auto 0; display: block; height: 36px; width: 80%;
+    background-image: repeating-linear-gradient(90deg,
+      var(--ink) 0 2px, transparent 2px 4px,
+      var(--ink) 4px 5px, transparent 5px 9px,
+      var(--ink) 9px 11px, transparent 11px 14px);
+  }
+
+  /* ---------- how-it-works as receipt items ---------- */
+  .how {
+    background: var(--paper-warm);
+    border-block: 1.5px solid var(--ink);
+    padding: 80px 24px;
+    margin-top: 32px;
+  }
+  .how__inner { max-width: 880px; margin: 0 auto; }
+  .how__head {
+    display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
+    gap: 24px; margin-bottom: 56px;
+  }
+  .how__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    letter-spacing: -0.025em;
+    line-height: 0.95;
+    margin: 0;
+    max-width: 14ch;
+  }
+  .how__sub {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    max-width: 28ch;
+  }
+
+  .how__item {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 24px;
+    padding: 28px 0;
+    border-bottom: 1.5px dashed var(--ink-faded);
+    align-items: start;
+  }
+  .how__item:last-child { border-bottom: 1.5px solid var(--ink); }
+  .how__num {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-2xl);
+    line-height: 0.85;
+    color: var(--stamp);
+    letter-spacing: -0.04em;
+  }
+  .how__copy h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-lg);
+    margin: 0 0 8px;
+    letter-spacing: -0.015em;
+  }
+  .how__copy p {
+    font-size: var(--t-base);
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 50ch;
+  }
+  .how__tag {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    align-self: end;
+    white-space: nowrap;
+  }
+
+  /* ---------- today's verified plates ---------- */
+  .verified {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 96px 24px 48px;
+  }
+  .verified__head {
+    display: flex; align-items: end; justify-content: space-between;
+    flex-wrap: wrap; gap: 24px; margin-bottom: 48px;
+  }
+  .verified__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    letter-spacing: -0.025em;
+    line-height: 0.95;
+    margin: 0;
+  }
+  .verified__title em { font-style: italic; color: var(--stamp); font-weight: 400; }
+  .verified__more {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 4px;
+  }
+  .verified__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  @media (min-width: 768px) { .verified__grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .mini {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 24px 22px 18px;
+    position: relative;
+    transition: transform 240ms;
+  }
+  .mini:hover { transform: translateY(-3px); }
+  .mini::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 9px;
+    background: radial-gradient(circle at 6px 9px, transparent 5.5px, var(--paper) 6px) 0 0 / 12px 9px repeat-x;
+  }
+  .mini__store {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faded);
+    margin-bottom: 10px;
+  }
+  .mini__dish {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--t-lg);
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin: 0 0 14px;
+  }
+  .mini__quote {
+    font-style: italic;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+    font-size: var(--t-sm);
+    line-height: 1.5;
+  }
+  .mini__foot {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1.5px dashed var(--ink-faded);
+    padding-top: 12px;
+  }
+  .mini__by {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-faded);
+  }
+
+  /* ---------- CTA tear-off ---------- */
+  .cta {
+    margin: 32px 24px 0;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 96px 32px;
+    position: relative;
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+  .cta::before, .cta::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 14px;
+    background:
+      radial-gradient(circle at 7px 14px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 14px repeat-x;
+  }
+  .cta::before { top: -1px; }
+  .cta::after  { bottom: -1px; transform: scaleY(-1); }
+  .cta__inner { max-width: 780px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+  .cta__eyebrow {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--paper-deep); margin-bottom: 24px;
+  }
+  .cta__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+    margin: 0 0 24px;
+  }
+  .cta__title em { font-style: italic; color: var(--night-stamp); font-weight: 400; }
+  .cta__lede { color: var(--paper-deep); max-width: 50ch; margin: 0 auto 40px; }
+  .cta__btn {
+    background: var(--paper); color: var(--ink);
+    border: 2px solid var(--paper);
+    padding: 16px 28px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--t-sm);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border-radius: var(--r-sm);
+    display: inline-flex; align-items: center; gap: 12px;
+    transition: transform 160ms, box-shadow 160ms;
+  }
+  .cta__btn:hover {
+    transform: translate(-2px,-2px);
+    box-shadow: 4px 4px 0 0 var(--night-stamp);
+  }
+  .cta__btn::after { content: "→"; font-size: 1.1em; }
+
+  /* watermark Cipta */
+  .cta__watermark {
+    position: absolute; right: -2%; bottom: -20%;
+    font-family: var(--font-display); font-style: italic;
+    font-weight: 900; font-size: clamp(8rem, 22vw, 18rem);
+    color: rgba(244,237,224,0.05);
+    line-height: 1; letter-spacing: -0.04em;
+    user-select: none; pointer-events: none;
+  }
+
+  /* ---------- footer fineprint ---------- */
+  .foot {
+    padding: 64px 24px 48px;
+    border-top: 1.5px solid var(--ink);
+    margin-top: 32px;
+    background: var(--paper);
+  }
+  .foot__inner {
+    max-width: 1180px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr; gap: 32px;
+  }
+  @media (min-width: 768px) { .foot__inner { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+
+  .foot__brand {
+    font-family: var(--font-display); font-style: italic;
+    font-weight: 900; font-size: var(--t-2xl);
+    letter-spacing: -0.03em; line-height: 1;
+    margin-bottom: 16px;
+  }
+  .foot__tag {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--ink-faded); max-width: 36ch;
+  }
+  .foot__col h4 {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+  }
+  .foot__col a {
+    display: block;
+    font-family: var(--font-body); font-size: var(--t-sm);
+    color: var(--ink); padding: 4px 0;
+    transition: color 160ms;
+  }
+  .foot__col a:hover { color: var(--stamp); }
+  .foot__legal {
+    margin-top: 48px;
+    border-top: 1.5px dashed var(--ink-faded);
+    padding-top: 20px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--ink-faded);
+  }
+
+  /* ---------- mobile bottom nav (kept from old) ---------- */
+  .mobile-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+    background: rgba(244,237,224,0.94);
+    backdrop-filter: blur(14px);
+    border-top: 1.5px solid var(--ink);
+    display: flex; justify-content: space-around;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 768px) { .mobile-nav { display: none; } }
+  .mobile-nav a {
+    flex: 1; text-align: center; padding: 8px 4px;
+    font-family: var(--font-mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    color: var(--ink-faded);
+  }
+  .mobile-nav a.is-active { color: var(--ink); }
+  .mobile-nav a span { display: block; font-size: 18px; margin-bottom: 2px; }
+
+  body { padding-bottom: 80px; }
+  @media (min-width: 768px) { body { padding-bottom: 0; } }
+</style>
+</head>
+<body>
+
+<!-- ====================== TOP NAV ====================== -->
+<header class="nav">
+  <a class="nav__brand" href="landing.html">Cipta</a>
+  <nav class="nav__links" aria-label="primary">
+    <a class="nav__link is-active" href="landing.html">Home</a>
+    <a class="nav__link" href="dashboard.html">Explore</a>
+    <a class="nav__link" href="plate_history.html">History</a>
+    <a class="nav__link" href="taste_favorites.html">Taste</a>
+  </nav>
+  <a class="nav__cta" href="join_cipta.html">Join Cipta</a>
+</header>
+
+<!-- ====================== TICKER ====================== -->
+<div class="ticker" role="marquee" aria-label="cipta thesis">
+  <div class="ticker__track">
+    <span class="ticker__item">The receipt is the review</span>
+    <span class="ticker__item">Per dish, not per restaurant</span>
+    <span class="ticker__item">Backed by the bill</span>
+    <span class="ticker__item">Verified by paper, not opinion</span>
+    <span class="ticker__item">Available on iOS + Android</span>
+    <span class="ticker__item">Free for diners, forever</span>
+    <span class="ticker__item">Built in Dallas–Fort Worth</span>
+    <!-- duplicated for seamless scroll -->
+    <span class="ticker__item">The receipt is the review</span>
+    <span class="ticker__item">Per dish, not per restaurant</span>
+    <span class="ticker__item">Backed by the bill</span>
+    <span class="ticker__item">Verified by paper, not opinion</span>
+    <span class="ticker__item">Available on iOS + Android</span>
+    <span class="ticker__item">Free for diners, forever</span>
+    <span class="ticker__item">Built in Dallas–Fort Worth</span>
+  </div>
+</div>
+
+<!-- ====================== HERO ====================== -->
+<section class="hero">
+  <div>
+    <p class="hero__eyebrow feed-in feed-in-1">DFW · live on iOS + Android</p>
+    <h1 class="hero__title feed-in feed-in-2">
+      The receipt<br />
+      is the <em>review<span class="hero__title-mark">.</span></em>
+    </h1>
+    <p class="hero__lede feed-in feed-in-3">
+      Scan your receipt. Rate every dish. Earn a verified plate that joins your own dining history —
+      the only food log backed by paper, not memory.
+    </p>
+    <div class="hero__ctas feed-in feed-in-4">
+      <a class="btn btn--ink" href="join_cipta.html">Start with a receipt →</a>
+      <a class="hero__signin" href="welcome_login.html">I already have an account</a>
+    </div>
+    <div class="hero__proof feed-in feed-in-5">
+      <span class="hero__proof-num">DFW.</span>
+      <span class="hero__proof-label">live on iOS + Android · free, forever</span>
+    </div>
+  </div>
+
+  <!-- demo receipt -->
+  <div class="receipt-wrap feed-in feed-in-3">
+    <article class="receipt" aria-label="sample verified receipt">
+      <header class="receipt__head">
+        <div class="receipt__store">DEMO BISTRO · DALLAS</div>
+        <div class="receipt__addr">[ example receipt · design preview ]</div>
+        <div class="receipt__meta-row">
+          <span>Saturday · 8:47 PM</span>
+          <span>Table 7 · Server: M.</span>
+        </div>
+      </header>
+
+      <hr class="receipt__divider" />
+
+      <div class="receipt__items">
+        <div class="itemized">
+          <span class="itemized__label">Barbacoa quesadilla</span>
+          <span class="itemized__leader"></span>
+          <span class="itemized__value stars">★★★★★</span>
+        </div>
+        <div class="itemized">
+          <span class="itemized__label">Elote (street)</span>
+          <span class="itemized__leader"></span>
+          <span class="itemized__value stars">★★★★<span class="stars__off">★</span></span>
+        </div>
+        <div class="itemized">
+          <span class="itemized__label">Al pastor tacos (3)</span>
+          <span class="itemized__leader"></span>
+          <span class="itemized__value stars">★★★★★</span>
+        </div>
+        <div class="itemized">
+          <span class="itemized__label">Tres leches</span>
+          <span class="itemized__leader"></span>
+          <span class="itemized__value stars">★★★<span class="stars__off">★★</span></span>
+        </div>
+        <div class="itemized">
+          <span class="itemized__label">Margarita · spicy</span>
+          <span class="itemized__leader"></span>
+          <span class="itemized__value stars">★★★★<span class="stars__off">★</span></span>
+        </div>
+      </div>
+
+      <hr class="receipt__divider" />
+
+      <div class="receipt__total">
+        <span>Plate score</span>
+        <span class="stars">★★★★<span class="stars__off">★</span> · 4.4</span>
+      </div>
+
+      <div class="receipt__stamp-anchor">
+        <span class="stamp">example</span>
+      </div>
+
+      <div class="receipt__barcode" aria-hidden="true"></div>
+      <div class="receipt__footer">
+        cipta · sample plate · #CPT-DEMO
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ====================== HOW IT WORKS ====================== -->
+<section class="how">
+  <div class="how__inner">
+    <header class="how__head">
+      <h2 class="how__title">Three steps.<br />No noise.</h2>
+      <p class="how__sub">A real review takes about 60 seconds, and it counts because the meal actually happened.</p>
+    </header>
+
+    <div class="how__item">
+      <div class="how__num">01</div>
+      <div class="how__copy">
+        <h3>Scan the receipt.</h3>
+        <p>Snap a photo as you leave. We pull the dishes line-by-line — no typing, no guessing what you ordered.</p>
+      </div>
+      <div class="how__tag">~ 8 sec</div>
+    </div>
+
+    <div class="how__item">
+      <div class="how__num">02</div>
+      <div class="how__copy">
+        <h3>Rate each dish.</h3>
+        <p>Star every item. Add a one-line note if you'd like. We rate the food itself — not an averaged score across an entire restaurant.</p>
+      </div>
+      <div class="how__tag">~ 40 sec</div>
+    </div>
+
+    <div class="how__item">
+      <div class="how__num">03</div>
+      <div class="how__copy">
+        <h3>Earn a verified plate.</h3>
+        <p>Your review gets a stamp and joins the record, so other diners can find what's worth eating.</p>
+      </div>
+      <div class="how__tag">forever</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== PERSONAL LEDGER ====================== -->
+<section class="ledger" id="ledger">
+  <div class="ledger__container">
+    <div class="ledger__grid">
+      <div class="ledger__copy">
+        <p class="hero__eyebrow" style="margin-bottom: 16px;">For you, day one</p>
+        <h2 class="how__title" style="font-size: clamp(2.25rem, 5vw, 3.75rem); margin: 0;">Your meals,<br /><em style="font-style: italic; font-weight: 400; color: var(--stamp);">on the record.</em></h2>
+        <p style="font-size: var(--t-md); color: var(--ink-soft); max-width: 50ch; margin-top: 24px;">
+          Cipta isn't only for the next diner. Every receipt you scan becomes part of <em>your own</em> verified
+          dining history — what you ate, where you ate it, and how good it actually was. The only food log
+          that doesn't depend on memory.
+        </p>
+        <ul class="ledger__uses" aria-label="things your record can answer">
+          <li>What was that pasta I had last August?</li>
+          <li>What's my actual top-rated dish of all time?</li>
+          <li>Where did I have the mole I couldn't stop thinking about?</li>
+          <li>Have I tried this place before — did I like it?</li>
+        </ul>
+        <a class="ledger__cta" href="plate_history.html">Open your record →</a>
+      </div>
+
+      <aside class="ledger__receipt-stage" aria-hidden="true">
+        <article class="ledger__receipt">
+          <header class="ledger__receipt-head">
+            <div class="ledger__receipt-title">YOUR DINING HISTORY</div>
+            <div class="ledger__receipt-sub">[ tracking begins on first scan ]</div>
+          </header>
+          <hr class="ledger__divider" />
+
+          <div class="ledger__row">
+            <span class="ledger__date">Dec 12</span>
+            <span class="ledger__where">[ restaurant ]<small>[ specific dish ]</small></span>
+            <span class="ledger__rating">★★★★★</span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__date">Nov 30</span>
+            <span class="ledger__where">[ restaurant ]<small>[ specific dish ]</small></span>
+            <span class="ledger__rating">★★★★<span class="ledger__rating-off">★</span></span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__date">Nov 22</span>
+            <span class="ledger__where">[ restaurant ]<small>[ specific dish ]</small></span>
+            <span class="ledger__rating">★★★★★</span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__date">Nov 14</span>
+            <span class="ledger__where">[ restaurant ]<small>[ specific dish ]</small></span>
+            <span class="ledger__rating">★★★<span class="ledger__rating-off">★★</span></span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__date">Nov 02</span>
+            <span class="ledger__where">[ restaurant ]<small>[ specific dish ]</small></span>
+            <span class="ledger__rating">★★★★★</span>
+          </div>
+
+          <hr class="ledger__divider" />
+
+          <div class="ledger__row">
+            <span class="ledger__total-label">Top dish · 2025</span>
+            <span class="ledger__total-value">[ revealed by your taste ]</span>
+          </div>
+          <div class="ledger__row">
+            <span class="ledger__count-label">Plates verified</span>
+            <span class="ledger__count-value">[ count ]</span>
+          </div>
+
+          <hr class="ledger__divider" />
+          <div class="ledger__footer-id">
+            cipta · your record · #CPT-YOU
+          </div>
+        </article>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== WHAT A VERIFIED REVIEW LOOKS LIKE ====================== -->
+<section class="verified">
+  <header class="verified__head">
+    <h2 class="verified__title">What a <em>verified</em> review looks like.</h2>
+    <span class="verified__more" style="border:0; padding:0; color: var(--ink-faded);">Design preview</span>
+  </header>
+
+  <div class="verified__grid">
+    <article class="mini">
+      <div class="mini__store">[ restaurant ] · [ neighborhood ]</div>
+      <h3 class="mini__dish">A specific dish, not the whole menu</h3>
+      <p class="mini__quote">A single line of context — what was good, what wasn't, in the diner's own words.</p>
+      <div class="mini__foot">
+        <span class="stars">★★★★★</span>
+        <span class="mini__by">@diner</span>
+      </div>
+    </article>
+
+    <article class="mini">
+      <div class="mini__store">[ restaurant ] · [ neighborhood ]</div>
+      <h3 class="mini__dish">Each item rated separately</h3>
+      <p class="mini__quote">No averaged restaurant score. The pasta and the dessert get judged on their own.</p>
+      <div class="mini__foot">
+        <span class="stars">★★★★<span class="stars__off">★</span></span>
+        <span class="mini__by">@diner</span>
+      </div>
+    </article>
+
+    <article class="mini">
+      <div class="mini__store">[ restaurant ] · [ neighborhood ]</div>
+      <h3 class="mini__dish">Tied to a real receipt</h3>
+      <p class="mini__quote">The plate is verified — timestamp, table, item line. Trust comes from paper, not vibes.</p>
+      <div class="mini__foot">
+        <span class="stars">★★★<span class="stars__off">★★</span></span>
+        <span class="mini__by">@diner</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ====================== CTA TEAR-OFF ====================== -->
+<section class="cta">
+  <div class="cta__inner">
+    <p class="cta__eyebrow">Tear here</p>
+    <h2 class="cta__title">Your next meal,<br />on the <em>record.</em></h2>
+    <p class="cta__lede">Sign up free. Your first scanned receipt earns your first verified plate.</p>
+    <a class="cta__btn" href="join_cipta.html">Join Cipta</a>
+  </div>
+  <div class="cta__watermark" aria-hidden="true">cipta</div>
+</section>
+
+<!-- ====================== FOOTER ====================== -->
+<footer class="foot">
+  <div class="foot__inner">
+    <div>
+      <div class="foot__brand">Cipta</div>
+      <p class="foot__tag">The receipt is the review. Built in Dallas–Fort Worth, 2026.</p>
+    </div>
+    <div class="foot__col">
+      <h4>Eat</h4>
+      <a href="dashboard.html">Explore</a>
+      <a href="plate_history.html">My history</a>
+      <a href="taste_favorites.html">Taste profile</a>
+    </div>
+    <div class="foot__col">
+      <h4>Account</h4>
+      <a href="join_cipta.html">Sign up</a>
+      <a href="welcome_login.html">Sign in</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="foot__col">
+      <h4>Cipta</h4>
+      <a href="#">About</a>
+      <a href="#">Press</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="foot__legal">
+    <span>© 2026 Cipta · DFW</span>
+    <span>Privacy · Terms · #CPT-LANDING-V2</span>
+  </div>
+</footer>
+
+<!-- ====================== MOBILE BOTTOM NAV ====================== -->
+<nav class="mobile-nav" aria-label="mobile primary">
+  <a class="is-active" href="landing.html"><span>★</span>Home</a>
+  <a href="dashboard.html"><span>◎</span>Explore</a>
+  <a href="plate_history.html"><span>≡</span>History</a>
+  <a href="profile.html"><span>○</span>Profile</a>
+</nav>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Cipta — Scanning…</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<link rel="stylesheet" href="cipta.css" />
+<style>
+  body { padding-bottom: 0; align-items: center; justify-content: center; }
+  main {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px 24px;
+    width: 100%;
+  }
+
+  .stage {
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 44px 28px 32px;
+    position: relative;
+    box-shadow: var(--shadow-paper);
+  }
+  .stage::before, .stage::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 12px;
+    background: radial-gradient(circle at 7px 12px, transparent 7px, var(--paper) 7.5px) 0 0 / 14px 12px repeat-x;
+  }
+  .stage::before { top: -10px; }
+  .stage::after { bottom: -10px; transform: scaleY(-1); }
+
+  .stage__spinner {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--paper-deep);
+    border-top-color: var(--stamp);
+    animation: spin 0.9s linear infinite;
+    margin: 0 auto 22px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .stage__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-lg);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin: 0 0 10px;
+  }
+  .stage__sub {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    margin: 0 0 24px;
+  }
+
+  .stage__progress {
+    display: flex; gap: 8px; justify-content: center;
+    margin-bottom: 26px;
+  }
+  .stage__progress span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--paper-deep);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .stage__progress span:nth-child(2) { animation-delay: 0.18s; }
+  .stage__progress span:nth-child(3) { animation-delay: 0.36s; }
+  .stage__progress span:nth-child(4) { animation-delay: 0.54s; }
+  .stage__progress span:nth-child(5) { animation-delay: 0.72s; }
+  @keyframes pulse {
+    0%, 100% { background: var(--paper-deep); }
+    50%      { background: var(--stamp); }
+  }
+
+  .cancel {
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 10px 18px;
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: var(--r-sm);
+  }
+  .cancel:hover { background: var(--ink); color: var(--paper); }
+</style>
+</head>
+<body class="cipta-shell">
+
+<header class="cipta-topbar">
+  <a class="cipta-topbar__brand" href="dashboard.html">Cipta</a>
+  <div class="cipta-topbar__title">Verifying</div>
+  <div></div>
+</header>
+
+<main>
+  <div class="stage" role="status" aria-live="polite">
+    <div class="stage__spinner" aria-hidden="true"></div>
+    <h1 class="stage__title">Reading the receipt</h1>
+    <p class="stage__sub">Items · totals · timestamp</p>
+
+    <div class="stage__progress" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <button type="button" class="cancel" onclick="window.location.href='scan_receipt.html'">
+      Cancel scan
+    </button>
+  </div>
+</main>
+
+<script src="cipta.js" defer></script>
+</body>
+</html>

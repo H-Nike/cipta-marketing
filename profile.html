@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Cipta — Profile</title>
+<link rel="stylesheet" href="../cipta_design/tokens.css" />
+<link rel="stylesheet" href="cipta.css" />
+<style>
+  body { padding-bottom: 80px; }
+
+  main {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+  }
+
+  .profile-head {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .avatar {
+    width: 88px; height: 88px;
+    margin: 0 auto 18px;
+    background: var(--paper-warm);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 900;
+    font-size: var(--t-xl);
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .profile-name {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: var(--t-xl);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    margin: 0 0 6px;
+  }
+  .profile-handle {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+  }
+
+  .section {
+    margin-bottom: 28px;
+  }
+  .section__title {
+    font-family: var(--font-mono);
+    font-size: var(--t-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px dashed var(--ink-faded);
+  }
+
+  .group {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+  }
+
+  .row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px dotted var(--ink-faded);
+    text-decoration: none;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 120ms;
+  }
+  .row:last-child { border-bottom: 0; }
+  .row:hover { background: var(--paper-warm); }
+  .row__chip {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+    background: var(--paper-warm);
+    display: grid; place-items: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .row__main { flex: 1; min-width: 0; }
+  .row__label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+    margin-bottom: 2px;
+  }
+  .row__value {
+    font-family: var(--font-body);
+    font-size: var(--t-sm);
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .row__chevron {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--ink-faded);
+  }
+
+  /* dietary chips */
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 16px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-sm);
+  }
+  .chip {
+    background: var(--paper-warm);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-pill);
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 160ms, color 160ms;
+  }
+  .chip:hover { background: var(--ink); color: var(--paper); }
+  .chip.is-on {
+    background: var(--ink); color: var(--paper);
+    position: relative;
+    padding-right: 28px;
+  }
+  .chip.is-on::after {
+    content: "✓";
+    position: absolute;
+    right: 12px; top: 50%; transform: translateY(-50%);
+    font-weight: 700;
+  }
+
+  /* toggle rows */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px dotted var(--ink-faded);
+  }
+  .toggle-row:last-child { border-bottom: 0; }
+  .toggle-row__label {
+    font-family: var(--font-body);
+    font-size: var(--t-sm);
+    color: var(--ink);
+  }
+  .toggle-row__hint {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faded);
+    margin-top: 2px;
+  }
+  .toggle {
+    appearance: none;
+    width: 44px; height: 24px;
+    border: 1.5px solid var(--ink);
+    border-radius: var(--r-pill);
+    background: var(--paper-warm);
+    position: relative;
+    cursor: pointer;
+    transition: background 160ms;
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: var(--ink);
+    border-radius: 50%;
+    transition: transform 160ms, background 160ms;
+  }
+  .toggle:checked { background: var(--stamp); border-color: var(--stamp); }
+  .toggle:checked::after {
+    transform: translateX(20px);
+    background: var(--paper);
+  }
+
+  .logout {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    border-radius: var(--r-sm);
+    padding: 14px 22px;
+    font-family: var(--font-mono);
+    font-size: var(--t-sm);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 8px;
+    transition: background 160ms, color 160ms;
+  }
+  .logout:hover { background: var(--ink); color: var(--paper); }
+
+  .version {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faded);
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body class="cipta-shell">
+
+<header class="cipta-topbar">
+  <a class="cipta-topbar__brand" href="dashboard.html">Cipta</a>
+  <div class="cipta-topbar__title">Profile</div>
+  <a class="cipta-topbar__action" href="dashboard.html">Done</a>
+</header>
+
+<main>
+  <section class="profile-head feed-in feed-in-1">
+    <div class="avatar">[N]</div>
+    <h1 class="profile-name">[ your name ]</h1>
+    <div class="profile-handle">@[ handle ] · DFW</div>
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Account</h2>
+    <div class="group">
+      <a class="row" href="#">
+        <div class="row__chip">@</div>
+        <div class="row__main">
+          <div class="row__label">Email</div>
+          <div class="row__value">[ your email ]</div>
+        </div>
+        <span class="row__chevron">›</span>
+      </a>
+      <a class="row" href="#">
+        <div class="row__chip">☎</div>
+        <div class="row__main">
+          <div class="row__label">Phone</div>
+          <div class="row__value">[ your phone ]</div>
+        </div>
+        <span class="row__chevron">›</span>
+      </a>
+      <a class="row" href="#">
+        <div class="row__chip">⚿</div>
+        <div class="row__main">
+          <div class="row__label">Security</div>
+          <div class="row__value">Update password</div>
+        </div>
+        <span class="row__chevron">›</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Dietary preferences</h2>
+    <div class="chips">
+      <button type="button" class="chip">Vegetarian</button>
+      <button type="button" class="chip">Spicy</button>
+      <button type="button" class="chip">Gluten-free</button>
+      <button type="button" class="chip">Seafood</button>
+      <button type="button" class="chip">No nuts</button>
+      <button type="button" class="chip">Halal</button>
+      <button type="button" class="chip">Dairy-free</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Notifications</h2>
+    <div class="group">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-row__label">New friend reviews</div>
+          <div class="toggle-row__hint">Plates from people you follow</div>
+        </div>
+        <input class="toggle" type="checkbox" checked />
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-row__label">Plate reminders</div>
+          <div class="toggle-row__hint">Nudge to scan after a long meal</div>
+        </div>
+        <input class="toggle" type="checkbox" checked />
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-row__label">Weekly recap</div>
+          <div class="toggle-row__hint">Sundays · what you ate this week</div>
+        </div>
+        <input class="toggle" type="checkbox" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Support &amp; legal</h2>
+    <div class="group">
+      <a class="row" href="#">
+        <div class="row__chip">?</div>
+        <div class="row__main">
+          <div class="row__value">Help center</div>
+        </div>
+        <span class="row__chevron">›</span>
+      </a>
+      <a class="row" href="#">
+        <div class="row__chip">§</div>
+        <div class="row__main">
+          <div class="row__value">Privacy policy</div>
+        </div>
+        <span class="row__chevron">›</span>
+      </a>
+      <a class="row" href="#">
+        <div class="row__chip">§</div>
+        <div class="row__main">
+          <div class="row__value">Terms of service</div>
+        </div>
+        <span class="row__chevron">›</span>
+      </a>
+    </div>
+  </section>
+
+  <button type="button" class="logout"
+          onclick="window.location.href='welcome_login.html';">
+    Log out
+  </button>
+  <p class="version">Cipta · DFW · v0.1.0</p>
+</main>
+
+<nav class="cipta-tabbar fixed bottom-0" aria-label="primary">
+  <a href="dashboard.html" data-icon="home"><span class="tab__glyph">▥</span><span>Home</span></a>
+  <a href="plate_history.html" data-icon="history"><span class="tab__glyph">≡</span><span>History</span></a>
+  <a href="taste_favorites.html" data-icon="restaurant_menu"><span class="tab__glyph">★</span><span>Taste</span></a>
+  <a href="profile.html" data-icon="person" class="is-active"><span class="tab__glyph">○</span><span>Profile</span></a>
+</nav>
+
+<script>
+  // dietary chip toggles
+  document.querySelectorAll('.chip').forEach((chip) => {
+    chip.addEventListener('click', () => chip.classList.toggle('is-on'));
+  });
+</script>
+<script src="cipta.js" defer></script>
+</body>
+</html>
