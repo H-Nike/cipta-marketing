@@ -35,7 +35,7 @@
   /* Radius */
   --r-sm:         10px;
 
-  /* Shadows · flattened per Hermann 2026-06-01: no 3D boxes anywhere */
-  --shadow-paper: none;
-  --shadow-lift:  none;
+  /* Shadows · gentle paper-lift for receipt/phone mockups (reconstructed) */
+  --shadow-paper: 0 14px 30px -18px rgba(31, 26, 20, 0.40);
+  --shadow-lift:  0 26px 56px -24px rgba(31, 26, 20, 0.45);
 }
