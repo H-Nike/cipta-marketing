@@ -1,0 +1,41 @@
+/* Cipta design tokens (restored from brand prototype) */
+:root {
+  /* Paper tones · warm to cool */
+  --paper:        #F4EDE0;
+  --paper-warm:   #EEE4D0;
+  --paper-deep:   #E5DAC2;
+
+  /* Ink (text + borders) */
+  --ink:          #1F1A14;
+  --ink-soft:     #4A4135;
+  --ink-faded:    #847866;
+  --ink-ghost:    #C8BDA8;
+
+  /* Orange CTA (Hermann 2026-06-02: Claim button = orange, not coral) */
+  --stamp:        #ED6A2D;
+  --stamp-dark:   #C95212;
+
+  /* Navy alt stamp */
+  --night-stamp:  #1B3A5C;
+
+  /* Type families */
+  --font-body:    -apple-system, BlinkMacSystemFont, 'Inter', Helvetica, Arial, sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-mono:    'Courier New', Courier, monospace;
+
+  /* Type scale */
+  --t-xs:         11px;
+  --t-sm:         13px;
+  --t-base:       15px;
+  --t-md:         17px;
+  --t-lg:         22px;
+  --t-xl:         36px;
+  --t-2xl:        72px;
+
+  /* Radius */
+  --r-sm:         10px;
+
+  /* Shadows · flattened per Hermann 2026-06-01: no 3D boxes anywhere */
+  --shadow-paper: none;
+  --shadow-lift:  none;
+}
