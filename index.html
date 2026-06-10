@@ -3,12 +3,53 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cipta — the receipt is the review</title>
-<meta name="description" content="Cipta is the only restaurant-review app where every rating is backed by a receipt. Per-dish, per-meal, verified. Launching in DFW, 2026." />
-<link rel="stylesheet" href="cipta_design/tokens.css" />
+<title>Cipta · The receipt is the review</title>
+<meta name="description" content="Per-dish customer feedback for restaurants, backed by the printed receipt. No POS integration. Live in 30 days. $99 per month. Launching in Dallas-Fort Worth, 2026." />
 <style>
+/* ============= DESIGN TOKENS (Cipta brand palette) ============= */
+:root {
+  /* Paper tones · warm to cool */
+  --paper:        #F4EDE0;
+  --paper-warm:   #EEE4D0;
+  --paper-deep:   #E5DAC2;
+
+  /* Ink (text + borders) */
+  --ink:          #1F1A14;
+  --ink-soft:     #4A4135;
+  --ink-faded:    #847866;
+  --ink-ghost:    #C8BDA8;
+
+  /* Orange CTA (Hermann 2026-06-02: Claim button = orange, not coral) */
+  --stamp:        #ED6A2D;
+  --stamp-dark:   #C95212;
+
+  /* Navy alt stamp */
+  --night-stamp:  #1B3A5C;
+
+  /* Type families */
+  --font-body:    -apple-system, BlinkMacSystemFont, 'Inter', Helvetica, Arial, sans-serif;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-mono:    'Courier New', Courier, monospace;
+
+  /* Type scale */
+  --t-xs:         11px;
+  --t-sm:         13px;
+  --t-base:       15px;
+  --t-md:         17px;
+  --t-lg:         22px;
+  --t-xl:         36px;
+  --t-2xl:        72px;
+
+  /* Radius */
+  --r-sm:         10px;
+
+  /* Shadows · flattened per Hermann 2026-06-01: no 3D boxes anywhere */
+  --shadow-paper: none;
+  --shadow-lift:  none;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; }
+html, body { margin: 0; overflow-x: hidden; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -17,7 +58,6 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
 }
 @media (max-width: 720px) { body { padding-bottom: 84px; } }
 a { color: inherit; text-decoration: none; }
@@ -79,12 +119,45 @@ body::before {
   border-radius: var(--r-sm);
   font-family: var(--font-mono); font-size: var(--t-xs);
   text-transform: uppercase; letter-spacing: 0.16em;
-  transition: transform 160ms, box-shadow 160ms;
+  transition: opacity 160ms;
 }
-.nav__cta:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 0 var(--ink); }
+.nav__cta:hover { opacity: 0.85; }
 
 /* ---------- ticker ---------- */
-.ticker { border-top: 0; border-bottom: 1.5px solid var(--ink); }
+.ticker {
+  border-top: 0;
+  border-bottom: 1.5px solid var(--ink);
+  background: var(--paper-warm);
+  overflow: hidden;
+}
+.ticker__track {
+  display: flex;
+  gap: 0;
+  white-space: nowrap;
+  animation: ticker-scroll 55s linear infinite;
+  padding: 12px 0;
+  width: max-content;
+}
+.ticker__item {
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0 28px 0 0;
+  display: inline-flex;
+  align-items: center;
+}
+.ticker__item::after {
+  content: "✦";
+  margin-left: 28px;
+  color: var(--stamp);
+  font-size: 9px;
+}
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
 
 /* ---------- hero ---------- */
 .hero {
@@ -112,6 +185,22 @@ body::before {
 .hero__title-mark { color: var(--stamp); transform: translateY(-0.04em); }
 .hero__lede { max-width: 38ch; margin: 0 0 40px; font-size: var(--t-md); color: var(--ink-soft); }
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.hero__primary-cta {
+  display: inline-block;
+  background: var(--stamp);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  padding: 14px 22px 15px;
+  border-radius: 10px;
+  transition: opacity 120ms;
+}
+.hero__primary-cta:hover {
+  opacity: 0.85;
+}
 .hero__see {
   font-family: var(--font-mono); font-size: var(--t-xs);
   text-transform: uppercase; letter-spacing: 0.18em;
@@ -142,8 +231,8 @@ body::before {
   display: flex; justify-content: center;
 }
 .receipt-stage::after {
-  content: ""; position: absolute; inset: -6% -10%; z-index: -1;
-  background: radial-gradient(closest-side, rgba(200,53,28,0.12), transparent 70%);
+  content: ""; position: absolute; inset: -4% -8%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(31,26,20,0.05), transparent 72%);
 }
 .receipt {
   width: min(440px, 100%);
@@ -216,6 +305,164 @@ body::before {
   padding: 0 24px;
   perspective: 2200px;
 }
+
+/* ---------- iPhone 17 silhouette, rendered in receipt paper ---------- */
+.phone {
+  width: 280px;
+  max-width: 100%;
+  background: var(--paper-warm);
+  border: 1.5px solid var(--ink);
+  border-radius: 44px;
+  padding: 7px;
+  position: relative;
+}
+.phone__notch {
+  position: absolute;
+  top: 13px; left: 50%;
+  transform: translateX(-50%);
+  width: 84px; height: 22px;
+  background: var(--ink);
+  border-radius: 14px;
+  z-index: 2;
+}
+.phone__screen {
+  background: var(--paper);
+  border-radius: 38px;
+  padding: 46px 18px 18px;
+  min-height: 480px;
+  display: flex; flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.phone__statusbar {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.08em; color: var(--ink);
+}
+.phone__statusbar-icons { letter-spacing: 0.05em; }
+.phone__appbar {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  text-transform: uppercase; letter-spacing: 0.14em;
+  padding: 6px 0 4px;
+  border-bottom: 1px dashed var(--ink-faded);
+}
+.phone__appbar-title { font-weight: 700; }
+.phone__appbar-side { color: var(--ink-soft); width: 24px; }
+.phone__body {
+  flex: 1; display: flex; flex-direction: column;
+  gap: 8px; padding-top: 6px;
+}
+.phone__verified-receipt { text-align: left; padding: 4px 0; }
+.phone__verified-store {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: var(--t-sm); letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.phone__verified-meta {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink-faded); letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+.phone__divider {
+  border: 0; border-top: 1px dashed var(--ink-faded);
+  margin: 4px 0;
+}
+.phone__verified-line {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-body); font-size: var(--t-sm);
+  padding: 2px 0;
+}
+.phone__verified-line-name { color: var(--ink); }
+.phone__verified-line-stars { color: var(--ink); letter-spacing: 0.04em; font-size: 11px; }
+.phone__rate-stars-off { color: var(--ink-ghost); }
+.phone__plate-score {
+  display: flex; align-items: baseline; gap: 8px;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: var(--t-md); margin-top: 4px;
+}
+.phone__plate-score-num { color: var(--stamp); }
+.phone__verified-stamp {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--stamp); letter-spacing: 0.18em;
+  text-transform: uppercase; margin-top: 2px;
+}
+.phone__tabbar {
+  margin-top: auto;
+  display: flex; justify-content: space-around;
+  border-top: 1px dashed var(--ink-faded);
+  padding-top: 8px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+.phone__tabbar-item { display: flex; align-items: center; gap: 3px; }
+.phone__tabbar-item--active { color: var(--ink); font-weight: 700; }
+
+/* Scan-receipt phone variant */
+.phone__scan-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-body); font-weight: 700;
+  font-size: var(--t-sm); padding: 4px 0;
+}
+.phone__scan-store {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: var(--t-sm); letter-spacing: 0.04em;
+  text-transform: uppercase; margin-top: 6px;
+}
+.phone__scan-tag {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink-faded); letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.phone__scan-line {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-body); font-size: var(--t-sm);
+  padding: 1px 0;
+}
+.phone__scan-total {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-body); font-weight: 800;
+  font-size: var(--t-sm); padding-top: 8px;
+  border-top: 1px dashed var(--ink-faded);
+  margin-top: 6px;
+}
+.phone__scan-cta {
+  text-align: left;
+  font-family: var(--font-body); font-weight: 700;
+  font-size: var(--t-sm); margin-top: 10px;
+}
+.phone__scan-cta small {
+  display: block; font-weight: 400;
+  font-size: 11px; color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+/* Rate-dishes phone variant */
+.phone__rate-head {
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+.phone__rate-sub {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.12em; color: var(--ink-soft);
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.phone__rate-line {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-body); font-size: var(--t-sm);
+  padding: 4px 0;
+}
+.phone__rate-stars { color: var(--ink); letter-spacing: 0.04em; }
+.phone__rate-submit {
+  margin-top: 14px;
+  background: var(--ink); color: var(--paper);
+  text-align: center;
+  font-family: var(--font-mono); font-size: var(--t-xs);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 12px 0; border-radius: 8px; font-weight: 700;
+}
 @media (min-width: 880px) {
   .showcase__phones {
     flex-direction: row; flex-wrap: wrap;
@@ -223,17 +470,9 @@ body::before {
   }
 }
 .showcase__col { display: flex; flex-direction: column; align-items: center; gap: 20px; flex: 0 0 auto; }
-.showcase__phone-wrap { transform-style: preserve-3d; }
-/* On mobile the phones stack — drop the rotation/lift so each one reads upright. */
-.showcase__phone-wrap--left .phone,
-.showcase__phone-wrap--right .phone,
-.showcase__phone-wrap--center .phone { transform: none; }
-@media (min-width: 880px) {
-  .showcase__phone-wrap--left .phone { transform: rotate(-3deg); }
-  .showcase__phone-wrap--center { z-index: 2; }
-  .showcase__phone-wrap--center .phone { transform: translateY(-12px) scale(1.04); }
-  .showcase__phone-wrap--right .phone { transform: rotate(3deg); }
-}
+/* Symmetric: all phones identical alignment, no rotation, no lift (Hermann 2026-06-02) */
+.showcase__phone-wrap { display: flex; justify-content: center; }
+.showcase__phone-wrap .phone { transform: none; }
 .showcase__caption {
   text-align: center;
   font-family: var(--font-mono); font-size: var(--t-xs);
@@ -654,9 +893,9 @@ body::before {
   font-family: var(--font-mono); font-weight: 700;
   font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.18em;
   cursor: pointer;
-  transition: transform 160ms, box-shadow 160ms;
+  transition: opacity 160ms;
 }
-.cta__submit:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 0 var(--stamp); }
+.cta__submit:hover { opacity: 0.85; }
 .cta__fineprint {
   margin-top: 24px;
   font-family: var(--font-mono); font-size: var(--t-xs);
@@ -696,19 +935,448 @@ body::before {
 </style>
 
 <!-- =========================================================
-     PRE-LAUNCH OVERRIDES — added 2026-04-26 for Toast partner deploy.
+     PRE-LAUNCH OVERRIDES · hides App-Store-era elements until the apps ship.
      Hides every element that would falsely imply the app is live on
      iOS / Android. To revert when the apps actually ship, delete the
      entire <style id="cipta-prelaunch-overrides"> block below.
      ========================================================= -->
 <style id="cipta-prelaunch-overrides">
+  /* Legacy App-Store-era elements that are no longer used.
+     .nav__cta and .hero__proof now hold the operator B2B CTAs, so they
+     stay visible. The rest stay hidden. */
   .store-badges,
   .install-bar,
-  .nav__cta,
-  .ledger__cta,
-  .hero__proof,
-  #download {
+  .ledger__cta {
     display: none !important;
+  }
+  /* Keep wide watermark from causing horizontal scroll on mobile */
+  .thesis { overflow: hidden; }
+</style>
+
+<!-- ============= LUXURY PASS (2026-06-02) =============
+     Quieter typography, more negative space, editorial rhythm.
+     Keeps original layout + palette. No shadows.
+     ============================================================ -->
+<style id="cipta-luxury-pass">
+  /* Section rhythm: tighter padding, more deliberate cadence */
+  .hero { padding: 64px 0 56px; }
+  @media (min-width: 1024px) { .hero { padding: 112px 0 84px; } }
+  .showcase { padding: 80px 0 96px; }
+  .stats { padding: 56px 0; background: var(--paper-warm); border-block: 1.5px solid var(--ink); }
+  .how { padding: 96px 0; }
+  .ledger { padding: 96px 0; }
+  .thesis { padding: 96px 0; }
+  .compare { padding: 96px 0; }
+  .owners { padding: 96px 0; }
+
+  /* Hero: quieter, more confident */
+  .hero__title {
+    font-size: clamp(3.25rem, 9.5vw, 7.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.038em;
+    margin: 24px 0 28px;
+  }
+  .hero__lede {
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    line-height: 1.55;
+    max-width: 42ch;
+    color: var(--ink-soft);
+  }
+  .hero__proof {
+    border-top: 1px solid var(--ink-faded);
+    padding-top: 18px;
+    margin-top: 40px;
+  }
+  .hero__proof-num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink);
+  }
+  .hero__proof-label {
+    color: var(--ink-soft);
+  }
+
+  /* Section headings: italic-led editorial */
+  .h-section {
+    font-size: clamp(2.5rem, 5.4vw, 4.5rem);
+    line-height: 0.96;
+    letter-spacing: -0.032em;
+  }
+  .h-section em {
+    font-style: italic; font-weight: 400;
+    color: var(--stamp);
+  }
+
+  /* Eyebrow refinement */
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--ink-soft);
+  }
+  .eyebrow::before {
+    background: var(--ink-faded);
+    width: 32px;
+  }
+
+  /* Showcase head: more breathing room */
+  .showcase__head { max-width: 760px; margin: 0 auto 56px; }
+  .showcase__head .lede { max-width: 52ch; margin-left: auto; margin-right: auto; color: var(--ink-soft); font-size: var(--t-md); }
+  .showcase__caption {
+    text-align: center;
+    margin-top: 22px;
+    color: var(--ink-soft);
+  }
+  .showcase__caption strong {
+    display: block; font-family: var(--font-display);
+    font-weight: 700; font-style: italic;
+    font-size: 1.35rem; letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .showcase__step {
+    display: inline-block;
+    font-family: var(--font-mono); font-weight: 400; font-style: normal;
+    font-size: 11px; letter-spacing: 0.18em;
+    color: var(--stamp);
+    margin-right: 10px;
+    vertical-align: 2px;
+  }
+
+  /* Stats: editorial, massive italic Georgia numerals with hairline rules */
+  .stats__grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    text-align: center;
+    max-width: 1080px; margin: 0 auto;
+  }
+  @media (min-width: 720px) {
+    .stats__grid { grid-template-columns: repeat(4, 1fr); gap: 0; }
+    .stats__grid > div + div { border-left: 1px solid var(--ink-faded); }
+    .stats__grid > div { padding: 12px 24px; }
+  }
+  .stat__num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(3.5rem, 6.2vw, 5.25rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .stat__label {
+    margin-top: 16px;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+  }
+
+  /* How: roman numerals + refined typography */
+  .how__head { margin-bottom: 48px; }
+  .how__item { padding: 32px 0; }
+  .how__num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(2.5rem, 4.6vw, 3.5rem);
+    color: var(--ink-soft);
+    letter-spacing: 0;
+  }
+  .how__copy h3 {
+    font-family: var(--font-display); font-style: italic;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+    margin: 0 0 8px;
+  }
+  .how__copy p {
+    color: var(--ink-soft);
+    font-size: var(--t-md);
+    line-height: 1.55;
+    max-width: 56ch;
+  }
+  .how__tag {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--ink-faded);
+  }
+
+  /* Pricing block: paper background, plan card on right */
+  .ledger {
+    background: var(--paper);
+    border-block: 1.5px solid var(--ink);
+  }
+  .ledger__copy h2 { margin-top: 14px; }
+  .ledger__copy .lede {
+    margin-top: 22px;
+    color: var(--ink-soft);
+    max-width: 44ch;
+  }
+  .ledger__uses {
+    margin: 32px 0 28px;
+    padding-top: 24px;
+  }
+  .ledger__uses li {
+    font-family: var(--font-body);
+    font-size: var(--t-md);
+    font-style: normal;
+    line-height: 1.5;
+    color: var(--ink);
+    padding-left: 24px;
+  }
+  .ledger__uses li::before {
+    content: "·";
+    color: var(--stamp);
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-style: normal;
+    top: 0;
+  }
+  .ledger__uses li strong {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Plan card: embossed, considered, no shadow */
+  .plan-card {
+    width: min(420px, 100%);
+    background: var(--paper-cool, #FAF6EC);
+    border: 1.5px solid var(--ink);
+    padding: 36px 32px 32px;
+    position: relative;
+  }
+  .plan-card::before,
+  .plan-card::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 10px;
+    background: radial-gradient(circle at 6px 10px, transparent 6px, var(--paper) 6.5px) 0 0 / 12px 10px repeat-x;
+  }
+  .plan-card::before { top: -8px; }
+  .plan-card::after { bottom: -8px; transform: scaleY(-1); }
+  .plan-card__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+  }
+  .plan-card__price {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .plan-card__price-num {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-style: italic;
+    font-size: clamp(3.5rem, 6vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .plan-card__price-suffix {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .plan-card__name {
+    font-family: var(--font-body);
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
+    margin: 4px 0 24px;
+    line-height: 1.45;
+  }
+  .plan-card__features {
+    list-style: none; padding: 0; margin: 0 0 28px;
+    border-top: 1px dashed var(--ink-faded);
+    padding-top: 20px;
+    display: grid; gap: 10px;
+  }
+  .plan-card__features li {
+    font-family: var(--font-body);
+    font-size: var(--t-sm);
+    color: var(--ink);
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.4;
+  }
+  .plan-card__features li::before {
+    content: "✓";
+    position: absolute; left: 0; top: 0;
+    color: var(--stamp);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .plan-card__cta {
+    display: block;
+    text-align: center;
+    width: 100%;
+    padding: 16px 20px !important;
+  }
+  .plan-card__fine {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  /* Thesis: compress + dramatically shrink watermark */
+  .thesis__title {
+    font-size: clamp(2.25rem, 5vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.028em;
+    max-width: 22ch;
+    margin: 16px 0 28px;
+  }
+  .thesis__body { font-size: var(--t-md); }
+  .thesis__watermark {
+    font-size: clamp(6rem, 14vw, 14rem);
+    right: -1%;
+    top: 35%;
+    color: rgba(244,237,224,0.045);
+  }
+
+  /* Owners section: refine */
+  .owners h2 { font-style: italic; }
+
+  /* Final CTA: keep its watermark in check too */
+  .cta__watermark {
+    font-size: clamp(5rem, 12vw, 10rem);
+    color: rgba(31,26,20,0.04);
+  }
+
+  /* Footer: refined colophon, much smaller wordmark */
+  .foot__brand {
+    font-size: clamp(2rem, 4vw, 3rem);
+    letter-spacing: -0.02em;
+  }
+
+  /* Ticker refinement: slower, less letter-spaced for legibility */
+  .ticker__track { animation-duration: 80s; padding: 14px 0; }
+  .ticker__item { font-size: 10px; letter-spacing: 0.22em; padding-right: 36px; color: var(--ink-soft); }
+  .ticker__item::after { margin-left: 36px; font-size: 8px; }
+
+  /* Nav refinement: more breathing room */
+  .nav { padding: 16px 28px; }
+  .nav__brand { font-size: 18px; }
+  .nav__links { gap: 40px; }
+  .nav__link { font-size: 10px; letter-spacing: 0.22em; }
+  .nav__cta {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    padding: 11px 18px;
+  }
+
+  /* Receipt-card flourish on hero: tighter, no shadow lift */
+  .receipt {
+    transform: rotate(-1deg);
+    border: 1.5px solid var(--ink);
+  }
+  .receipt:hover { transform: rotate(0deg); }
+
+  /* Mobile cleanup: ensure horizontal harmony */
+  @media (max-width: 720px) {
+    .hero { padding: 48px 0 48px; }
+    .showcase { padding: 64px 0; }
+    .how { padding: 72px 0; }
+    .ledger { padding: 72px 0; }
+    .thesis { padding: 72px 0; }
+    .compare { padding: 72px 0; }
+    .owners { padding: 72px 0; }
+    .ledger__grid { gap: 48px; }
+    .stat__num { font-size: 3.5rem; }
+    .plan-card { padding: 28px 24px 24px; }
+  }
+</style>
+
+<!-- ============= SHOWCASE + ENTRANCE FIXES (2026-06-09) =============
+     Reconciles the redesigned phone markup with styles that were missing
+     (the Scan and Rate phones referenced classes with no CSS), so all three
+     "See it in action" phones render consistently. Also wires the feed-in
+     entrance hooks already present in the hero markup. ============ -->
+<style id="cipta-showcase-fix">
+  /* --- Phone 1: Scan viewfinder --- */
+  .phone__body--scan { gap: 12px; }
+  .phone__viewfinder {
+    border: 1.5px dashed var(--ink);
+    background: var(--paper-warm);
+    padding: 14px 14px 12px;
+    position: relative;
+    font-family: var(--font-mono);
+  }
+  .phone__viewfinder::before,
+  .phone__viewfinder::after {
+    content: ""; position: absolute; width: 16px; height: 16px;
+    border: 2px solid var(--stamp);
+  }
+  .phone__viewfinder::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+  .phone__viewfinder::after  { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+  .phone__viewfinder-store {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: var(--t-sm); letter-spacing: 0.04em;
+    text-transform: uppercase; text-align: center;
+  }
+  .phone__viewfinder-line {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--ink-soft);
+    letter-spacing: 0.02em; padding: 2px 0;
+  }
+  .phone__scan-prompt {
+    text-align: center;
+    font-family: var(--font-body); font-size: var(--t-sm);
+    color: var(--ink-soft);
+  }
+  .phone__scan-prompt strong { color: var(--ink); font-weight: 700; }
+  .phone__scan-shutter {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 2px solid var(--ink); margin: 4px auto 0;
+    position: relative;
+  }
+  .phone__scan-shutter::after {
+    content: ""; position: absolute; inset: 5px;
+    border-radius: 50%; background: var(--stamp);
+  }
+
+  /* --- Phone 2: Rate rows --- */
+  .phone__rate-prompt {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-soft);
+    border-bottom: 1px dashed var(--ink-faded);
+    padding-bottom: 6px; margin-bottom: 2px;
+  }
+  .phone__rate-row {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; padding: 5px 0;
+    border-bottom: 1px dashed var(--ink-faded);
+  }
+  .phone__rate-label {
+    font-family: var(--font-body); font-size: var(--t-sm);
+    color: var(--ink);
+  }
+
+  /* --- Verified plate total row (hero + phone 3) --- */
+  .phone__verified-total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--font-display); font-weight: 900;
+    font-size: var(--t-md); letter-spacing: -0.01em;
+    margin-top: 2px;
+  }
+
+  /* --- Entrance: wire the feed-in hooks, respect reduced motion --- */
+  @media (prefers-reduced-motion: no-preference) {
+    .feed-in { opacity: 0; transform: translateY(14px); animation: feed-in-up 620ms cubic-bezier(.2,.7,.2,1) forwards; }
+    .feed-in-1 { animation-delay: 60ms; }
+    .feed-in-2 { animation-delay: 150ms; }
+    .feed-in-3 { animation-delay: 250ms; }
+    .feed-in-4 { animation-delay: 360ms; }
+    .feed-in-5 { animation-delay: 470ms; }
+    @keyframes feed-in-up { to { opacity: 1; transform: translateY(0); } }
   }
 </style>
 </head>
@@ -719,11 +1387,11 @@ body::before {
   <a class="nav__brand" href="#top">Cipta</a>
   <nav class="nav__links" aria-label="primary">
     <a class="nav__link" href="#how">How it works</a>
-    <a class="nav__link" href="#thesis">Verification</a>
-    <a class="nav__link" href="#compare">Vs. the rest</a>
-    <a class="nav__link" href="#owners">For restaurants</a>
+    <a class="nav__link" href="#pricing">Pricing</a>
+    <a class="nav__link" href="#owners">For operators</a>
+    <a class="nav__link" href="#diner">For diners</a>
   </nav>
-  <a class="nav__cta" href="#download">Get the app</a>
+  <a class="nav__cta" href="https://cipta.co/operator/sign-up">Claim your restaurant</a>
 </header>
 
 <!-- ============= TICKER ============= -->
@@ -732,17 +1400,17 @@ body::before {
     <span class="ticker__item">The receipt is the review</span>
     <span class="ticker__item">Per dish, not per restaurant</span>
     <span class="ticker__item">Backed by the bill</span>
-    <span class="ticker__item">Verified by paper, not opinion</span>
-    <span class="ticker__item">Available on iOS + Android</span>
-    <span class="ticker__item">Free for diners, forever</span>
-    <span class="ticker__item">Built in Dallas–Fort Worth</span>
+    <span class="ticker__item">No POS integration</span>
+    <span class="ticker__item">Live in 30 days</span>
+    <span class="ticker__item">$99 per month, single location</span>
+    <span class="ticker__item">Built in Dallas-Fort Worth</span>
     <span class="ticker__item">The receipt is the review</span>
     <span class="ticker__item">Per dish, not per restaurant</span>
     <span class="ticker__item">Backed by the bill</span>
-    <span class="ticker__item">Verified by paper, not opinion</span>
-    <span class="ticker__item">Available on iOS + Android</span>
-    <span class="ticker__item">Free for diners, forever</span>
-    <span class="ticker__item">Built in Dallas–Fort Worth</span>
+    <span class="ticker__item">No POS integration</span>
+    <span class="ticker__item">Live in 30 days</span>
+    <span class="ticker__item">$99 per month, single location</span>
+    <span class="ticker__item">Built in Dallas-Fort Worth</span>
   </div>
 </div>
 
@@ -751,44 +1419,28 @@ body::before {
   <div class="container">
     <div class="hero__grid">
       <div>
-        <p class="eyebrow feed-in feed-in-1">DFW · available on iOS + Android</p>
+        <p class="eyebrow feed-in feed-in-1">DFW · for restaurant operators</p>
         <h1 class="hero__title feed-in feed-in-2">
           The receipt<br />
           is the <em>review<span class="hero__title-mark">.</span></em>
         </h1>
         <p class="hero__lede feed-in feed-in-3">
-          Cipta counts reviews that come from receipts — per dish, per meal, verified.
-          And every plate you scan becomes part of your own permanent dining record.
+          Per-dish feedback from your printed receipts. Customers scan the QR on
+          the receipt they already hold, rate each dish, and your dashboard sees
+          it within 60 seconds. No POS integration. Live in 30 days.
         </p>
         <div class="hero__ctas feed-in feed-in-4">
-          <div class="store-badges">
-            <!-- TODO(Hermann): replace href with real App Store URL -->
-            <a class="store-badge" href="#" aria-label="Download Cipta on the App Store">
-              <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-              <span class="store-badge__text">
-                <span class="store-badge__small">Download on the</span>
-                <span class="store-badge__big">App Store</span>
-              </span>
-            </a>
-            <!-- TODO(Hermann): replace href with real Google Play URL -->
-            <a class="store-badge" href="#" aria-label="Get Cipta on Google Play">
-              <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
-              <span class="store-badge__text">
-                <span class="store-badge__small">Get it on</span>
-                <span class="store-badge__big">Google Play</span>
-              </span>
-            </a>
-          </div>
+          <a class="hero__primary-cta" href="https://cipta.co/operator/sign-up">Claim your restaurant</a>
           <a class="hero__see" href="#how">See how it works</a>
         </div>
         <div class="hero__proof feed-in feed-in-5">
-          <span class="hero__proof-num">DFW.</span>
-          <span class="hero__proof-label">live on iOS + Android · free for diners, forever</span>
+          <span class="hero__proof-num">$99/mo.</span>
+          <span class="hero__proof-label">single location · $79/location for 2-9 · 30-day pilot, no card required</span>
         </div>
       </div>
 
       <div class="receipt-stage feed-in feed-in-3" style="display:flex; justify-content: center; align-items: center;">
-        <div class="phone" aria-label="Cipta app verified plate screen — design preview">
+        <div class="phone" aria-label="Cipta app verified plate screen · design preview">
           <div class="phone__notch" aria-hidden="true"></div>
           <div class="phone__screen">
             <div class="phone__statusbar">
@@ -813,13 +1465,7 @@ body::before {
               <div class="phone__verified-line"><span class="phone__verified-line-name">Margarita</span><span class="phone__verified-line-stars">★★★★<span class="phone__rate-stars-off">★</span></span></div>
               <hr class="phone__divider" />
               <div class="phone__verified-total"><span>Plate score</span><span style="color: var(--stamp);">4.4 ★</span></div>
-              <div class="phone__verified-stamp">verified</div>
-            </div>
-            <div class="phone__tabbar">
-              <a class="is-active"><span>★</span>Home</a>
-              <a><span>◎</span>Explore</a>
-              <a><span>≡</span>History</a>
-              <a><span>○</span>Profile</a>
+              <div class="phone__verified-stamp">verified · sent to operator dashboard</div>
             </div>
           </div>
         </div>
@@ -829,11 +1475,11 @@ body::before {
 </section>
 
 <!-- ============= SEE IT IN ACTION ============= -->
-<section class="showcase" id="showcase" aria-label="see Cipta in action">
+<section class="showcase" id="diner" aria-label="how your customers experience Cipta">
   <header class="showcase__head">
-    <p class="eyebrow eyebrow--center">See it in action</p>
-    <h2 class="h-section">Three taps,<br />one <em>verified</em> plate.</h2>
-    <p class="lede">A look at what you'll do once Cipta is on your phone.</p>
+    <p class="eyebrow eyebrow--center">For your diners</p>
+    <h2 class="h-section">Three taps,<br />one <em>verified</em> review.</h2>
+    <p class="lede">No app to download. Your customer scans the QR on the receipt you printed, picks the dishes they had, and rates them. You see it in your dashboard within 60 seconds.</p>
   </header>
 
   <div class="showcase__phones">
@@ -841,7 +1487,7 @@ body::before {
     <!-- ===== Phone 1: SCAN ===== -->
     <div class="showcase__col">
       <div class="showcase__phone-wrap showcase__phone-wrap--left">
-        <div class="phone" aria-label="scan a receipt — design preview">
+        <div class="phone" aria-label="scan a receipt · design preview">
           <div class="phone__notch" aria-hidden="true"></div>
           <div class="phone__screen">
             <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
@@ -863,13 +1509,13 @@ body::before {
           </div>
         </div>
       </div>
-      <div class="showcase__caption"><strong><span class="showcase__step">01</span>Scan</strong>Snap a photo as you leave</div>
+      <div class="showcase__caption"><strong><span class="showcase__step">01</span>Scan</strong>QR on the receipt, or snap the receipt itself.</div>
     </div>
 
     <!-- ===== Phone 2: RATE ===== -->
     <div class="showcase__col">
       <div class="showcase__phone-wrap showcase__phone-wrap--center">
-        <div class="phone" aria-label="rate every dish — design preview">
+        <div class="phone" aria-label="rate every dish · design preview">
           <div class="phone__notch" aria-hidden="true"></div>
           <div class="phone__screen">
             <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
@@ -901,13 +1547,13 @@ body::before {
           </div>
         </div>
       </div>
-      <div class="showcase__caption"><strong><span class="showcase__step">02</span>Rate</strong>One tap per dish, no essay</div>
+      <div class="showcase__caption"><strong><span class="showcase__step">02</span>Rate</strong>One tap per dish. Comments optional.</div>
     </div>
 
     <!-- ===== Phone 3: VERIFIED ===== -->
     <div class="showcase__col">
       <div class="showcase__phone-wrap showcase__phone-wrap--right">
-        <div class="phone" aria-label="verified plate — design preview">
+        <div class="phone" aria-label="verified plate · design preview">
           <div class="phone__notch" aria-hidden="true"></div>
           <div class="phone__screen">
             <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
@@ -924,18 +1570,12 @@ body::before {
               <div class="phone__verified-line"><span class="phone__verified-line-name">Tres leches</span><span class="phone__verified-line-stars">★★★<span class="phone__rate-stars-off">★★</span></span></div>
               <hr class="phone__divider" />
               <div class="phone__verified-total"><span>Plate score</span><span style="color: var(--stamp);">4.4 ★</span></div>
-              <div class="phone__verified-stamp">verified</div>
-            </div>
-            <div class="phone__tabbar">
-              <a class="is-active"><span>★</span>Home</a>
-              <a><span>◎</span>Explore</a>
-              <a><span>≡</span>History</a>
-              <a><span>○</span>Profile</a>
+              <div class="phone__verified-stamp">verified · sent to operator</div>
             </div>
           </div>
         </div>
       </div>
-      <div class="showcase__caption"><strong><span class="showcase__step">03</span>Verified</strong>Joins your record. Public if you want it.</div>
+      <div class="showcase__caption"><strong><span class="showcase__step">03</span>Done</strong>Lands in the operator dashboard within 60 seconds.</div>
     </div>
 
   </div>
@@ -954,140 +1594,92 @@ body::before {
         <div class="stat__label">Backed by the bill</div>
       </div>
       <div>
-        <div class="stat__num">DFW.</div>
-        <div class="stat__label">Live on iOS + Android</div>
+        <div class="stat__num">60 sec.</div>
+        <div class="stat__label">Feedback in your dashboard</div>
       </div>
       <div>
-        <div class="stat__num">$0</div>
-        <div class="stat__label">Free for diners, forever</div>
+        <div class="stat__num">$99</div>
+        <div class="stat__label">Per month, single location</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============= HOW IT WORKS ============= -->
+<!-- ============= HOW IT WORKS (operator) ============= -->
 <section class="how" id="how">
   <div class="container">
     <header class="how__head">
       <div>
-        <p class="eyebrow">From dinner to verified plate</p>
-        <h2 class="h-section">Three steps.<br /><em>No noise.</em></h2>
+        <p class="eyebrow">From sign-up to first feedback</p>
+        <h2 class="h-section">Three steps.<br /><em>No IT project.</em></h2>
       </div>
-      <p class="lede" style="margin: 0;">An honest review takes about a minute. It counts because you actually ate the meal — not because you scrolled to "leave a review."</p>
+      <p class="lede" style="margin: 0;">No POS integration. No app for your customers to download. Cipta works off the receipt your POS already prints, the day you sign up.</p>
     </header>
 
     <div class="how__list">
       <div class="how__item">
         <div class="how__num">01</div>
         <div class="how__copy">
-          <h3>Scan the receipt.</h3>
-          <p>Snap a photo as you leave. Cipta pulls every dish, line by line — no typing, no guessing what you ordered, no recall fade three days later.</p>
+          <h3>Sign up. Add your menu.</h3>
+          <p>Enter your restaurant in five minutes. Paste your menu, or let Cipta read it from your website. No POS access, no integrations.</p>
         </div>
-        <div class="how__tag">~ 8 sec</div>
+        <div class="how__tag">day 1</div>
       </div>
 
       <div class="how__item">
         <div class="how__num">02</div>
         <div class="how__copy">
-          <h3>Rate every dish.</h3>
-          <p>Star each item. Drop a one-line note if it's worth it. We rate the food, not the restaurant — averaging plates is how truth dies.</p>
+          <h3>Print the QR on your receipts.</h3>
+          <p>Drop a single line into your receipt footer with your Cipta link. Or print the leave-behind card. That is the whole rollout.</p>
         </div>
-        <div class="how__tag">~ 40 sec</div>
+        <div class="how__tag">day 1-2</div>
       </div>
 
       <div class="how__item">
         <div class="how__num">03</div>
         <div class="how__copy">
-          <h3>Earn a verified plate.</h3>
-          <p>Stamped, dated, public. Your review enters the record so other diners can find what's worth eating.</p>
+          <h3>See feedback in your dashboard.</h3>
+          <p>Per-dish ratings, shift drift, comments. Within 60 seconds of the customer rating. 24-48 hours ahead of any Google review.</p>
         </div>
-        <div class="how__tag">forever</div>
+        <div class="how__tag">live</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============= PERSONAL LEDGER  ============= -->
-<section class="ledger" id="ledger">
+<!-- ============= PRICING  ============= -->
+<section class="ledger" id="pricing">
   <div class="container">
     <div class="ledger__grid">
       <div class="ledger__copy">
-        <p class="eyebrow">For you, day one</p>
-        <h2 class="h-section">Your meals,<br /><em>on the record.</em></h2>
+        <p class="eyebrow">Plain pricing</p>
+        <h2 class="h-section">Less than one<br /><em>dropped table</em><br />per month.</h2>
         <p class="lede">
-          Cipta isn't only for the next diner. Every receipt you scan becomes part of <em>your own</em> verified
-          dining history — what you ate, where you ate it, and how good it actually was. The only food log
-          that doesn't depend on memory.
+          One flat monthly price. No setup fee. No POS license. No usage caps on customer ratings. Cancel any month, keep your data export.
         </p>
-        <ul class="ledger__uses" aria-label="things your record can answer">
-          <li>What was that pasta I had last August?</li>
-          <li>What's my actual top-rated dish of all time?</li>
-          <li>Where did I have the mole I couldn't stop thinking about?</li>
-          <li>Have I tried this place before — did I like it?</li>
+        <ul class="ledger__uses" aria-label="pricing tiers">
+          <li><strong>$99 / month</strong> · Single location. Everything in the dashboard, unlimited ratings.</li>
+          <li><strong>$79 / location / month</strong> · Groups of 2 to 9 locations. Same dashboard, per-location filters.</li>
+          <li><strong>30-day pilot, no card required</strong> · See real customer feedback before you decide.</li>
+          <li><strong>10+ locations</strong> · Email <a href="mailto:hello@getcipta.com" style="border-bottom: 1px solid var(--ink-faded);">hello@getcipta.com</a> for group pricing.</li>
         </ul>
-        <a class="ledger__cta" href="#download">Get the app to start your record →</a>
+        <a class="hero__primary-cta" href="https://cipta.co/operator/sign-up" style="margin-top: 8px;">Claim your restaurant</a>
       </div>
 
-      <aside class="ledger__phone-stage" aria-hidden="true">
-        <div class="phone" aria-label="Cipta dining history — design preview">
-          <div class="phone__notch" aria-hidden="true"></div>
-          <div class="phone__screen">
-            <div class="phone__statusbar"><span>9:41</span><span class="phone__statusbar-icons">●●●● 5G ▮▮▮</span></div>
-            <div class="phone__appbar">
-              <span class="phone__appbar-side">←</span>
-              <span class="phone__appbar-title">History</span>
-              <span class="phone__appbar-side" style="text-align:right;">≡</span>
-            </div>
-            <div class="phone__body">
-              <div class="phone__hist-head">YOUR DINING HISTORY</div>
-              <div class="phone__hist-meta">[ tracking begins on first scan ]</div>
-
-              <div class="phone__hist-row">
-                <span class="phone__hist-date">Dec 12</span>
-                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
-                <span class="phone__hist-stars">★★★★★</span>
-              </div>
-              <div class="phone__hist-row">
-                <span class="phone__hist-date">Nov 30</span>
-                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
-                <span class="phone__hist-stars">★★★★<span class="phone__rate-stars-off">★</span></span>
-              </div>
-              <div class="phone__hist-row">
-                <span class="phone__hist-date">Nov 22</span>
-                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
-                <span class="phone__hist-stars">★★★★★</span>
-              </div>
-              <div class="phone__hist-row">
-                <span class="phone__hist-date">Nov 14</span>
-                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
-                <span class="phone__hist-stars">★★★<span class="phone__rate-stars-off">★★</span></span>
-              </div>
-              <div class="phone__hist-row">
-                <span class="phone__hist-date">Nov 02</span>
-                <span class="phone__hist-where">[ restaurant ]<small>[ specific dish ]</small></span>
-                <span class="phone__hist-stars">★★★★★</span>
-              </div>
-
-              <div style="margin-top: 12px;">
-                <div class="phone__hist-summary phone__hist-summary--top">
-                  <span>Top dish · 2025</span>
-                  <span style="font-family: var(--font-mono); font-size: 8px; color: var(--ink-faded); letter-spacing: 0.12em; text-transform: uppercase; font-style: normal; font-weight: 600;">[ revealed ]</span>
-                </div>
-                <div class="phone__hist-summary">
-                  <span>Plates verified</span>
-                  <span>[ count ]</span>
-                </div>
-              </div>
-
-              <div class="phone__hist-footer">cipta · your record · #CPT-YOU</div>
-            </div>
-            <div class="phone__tabbar">
-              <a><span>★</span>Home</a>
-              <a><span>◎</span>Explore</a>
-              <a class="is-active"><span>≡</span>History</a>
-              <a><span>○</span>Profile</a>
-            </div>
-          </div>
+      <aside class="ledger__phone-stage" aria-label="Cipta pilot plan summary">
+        <div class="plan-card">
+          <div class="plan-card__eyebrow">Pilot plan</div>
+          <div class="plan-card__price"><span class="plan-card__price-num">$99</span><span class="plan-card__price-suffix">/ month</span></div>
+          <div class="plan-card__name">Single location · all dashboard features</div>
+          <ul class="plan-card__features">
+            <li>Unlimited customer ratings</li>
+            <li>Per-dish sentiment + comments</li>
+            <li>Shift drift, root-cause tags</li>
+            <li>SMS callback for unhappy diners</li>
+            <li>Cancel any month, data export included</li>
+          </ul>
+          <a class="hero__primary-cta plan-card__cta" href="https://cipta.co/operator/sign-up">Start 30-day pilot</a>
+          <div class="plan-card__fine">No credit card to start. Cancel any time inside the first 30 days.</div>
         </div>
       </aside>
     </div>
@@ -1100,8 +1692,8 @@ body::before {
     <p class="eyebrow">Why receipts</p>
     <h2 class="thesis__title">Anyone can leave a review.<br /><em>Almost no one</em> can prove they ate the meal.</h2>
     <div class="thesis__body">
-      <p>Today's review apps let almost anyone rate almost anything — including dishes they never ordered, restaurants they've never been to, and meals AI invented for them.</p>
-      <p>Cipta starts with a receipt — a timestamp, a table, the dishes you actually paid for. Then it asks one thing: how was each one? Four verification layers, no opinions about parking or the wallpaper.</p>
+      <p>Today's review apps let almost anyone rate almost anything. Including dishes they never ordered, restaurants they've never been to, and meals AI invented for them.</p>
+      <p>Cipta starts with a receipt. A timestamp, a table, the dishes a real diner actually paid for. Then it asks one thing. How was each one? Four verification layers. No opinions about parking or the wallpaper.</p>
       <p style="color: var(--paper);"><strong>Per dish. Per meal. Backed by the bill.</strong></p>
     </div>
   </div>
@@ -1131,17 +1723,17 @@ body::before {
       <div class="compare__row">
         <div class="compare__cell">Receipt-verified rating</div>
         <div class="compare__cell compare__cell--cipta">✓</div>
-        <div class="compare__cell compare__cell--no">—</div>
+        <div class="compare__cell compare__cell--no">×</div>
       </div>
       <div class="compare__row">
         <div class="compare__cell">Per-dish, not per-restaurant</div>
         <div class="compare__cell compare__cell--cipta">✓</div>
-        <div class="compare__cell compare__cell--no">—</div>
+        <div class="compare__cell compare__cell--no">×</div>
       </div>
       <div class="compare__row">
         <div class="compare__cell">Resistant to AI-generated reviews</div>
         <div class="compare__cell compare__cell--cipta">✓</div>
-        <div class="compare__cell compare__cell--no">—</div>
+        <div class="compare__cell compare__cell--no">×</div>
       </div>
       <div class="compare__row">
         <div class="compare__cell">No paid placement or removal</div>
@@ -1156,7 +1748,7 @@ body::before {
       <div class="compare__row">
         <div class="compare__cell">Built around the bill</div>
         <div class="compare__cell compare__cell--cipta">✓</div>
-        <div class="compare__cell compare__cell--no">—</div>
+        <div class="compare__cell compare__cell--no">×</div>
       </div>
 
       <div class="compare__row compare__row--total">
@@ -1173,52 +1765,37 @@ body::before {
   <div class="container">
     <div class="owners__grid">
       <div>
-        <p class="eyebrow">For restaurants</p>
+        <p class="eyebrow">For operators</p>
         <h2 class="h-section">Reviews you can <em>stand behind.</em></h2>
-        <p class="lede" style="margin-top: 24px;">Every Cipta review is tied to a real meal at your restaurant. You can answer the dish — or hang the verified plate on the wall.</p>
+        <p class="lede" style="margin-top: 24px;">Every Cipta rating is tied to a real check at your restaurant. You see exactly which dish, on which shift. You answer the dish, not the algorithm.</p>
         <ul class="owners__list">
-          <li>Every review tied to a verified bill from your restaurant.</li>
-          <li>Per-dish data — see exactly which items diners loved or didn't.</li>
-          <li>No paid removals, no anonymous review bombs.</li>
-          <li>Free dashboard, free claim, free always.</li>
+          <li>Every rating tied to a verified bill from your dining room.</li>
+          <li>Per-dish sentiment. You see which items diners loved, and which ones don't carry the menu anymore.</li>
+          <li>Shift drift. Spot the night a station slipped before it becomes a Google review.</li>
+          <li>Operator-only data. We never sell it, we never let competitors see it.</li>
         </ul>
-        <a class="btn btn--ink" href="#early-access">Claim your restaurant →</a>
+        <a class="hero__primary-cta" href="https://cipta.co/operator/sign-up">Claim your restaurant</a>
       </div>
 
       <aside class="owners__pin">
         <h4>What a Cipta review tells you</h4>
-        <blockquote>Per-dish ratings tied to the bill, not vague restaurant averages. You see exactly which item the diner loved or didn't — and you can answer the dish, not the algorithm.</blockquote>
-        <cite>— how the restaurant view works</cite>
+        <blockquote>Per-dish ratings tied to the bill, not vague restaurant averages. You see exactly which item the diner loved or didn't. You can answer the dish, not the algorithm.</blockquote>
+        <cite>how the operator dashboard reads</cite>
       </aside>
     </div>
   </div>
 </section>
 
-<!-- ============= DOWNLOAD CTA ============= -->
-<section class="cta" id="download">
+<!-- ============= CLAIM CTA ============= -->
+<section class="cta" id="claim">
   <div class="cta__inner">
     <p class="eyebrow eyebrow--center">Tear here</p>
-    <h2 class="cta__title">Free in DFW.<br />Live on <em>iOS + Android.</em></h2>
-    <p class="cta__lede">Scan a receipt, rate every dish, build the only food log that's actually verified by the bill.</p>
-    <div class="store-badges" style="justify-content: center; margin-top: 8px;">
-      <!-- TODO(Hermann): replace href with real App Store URL -->
-      <a class="store-badge store-badge--paper" href="#" aria-label="Download Cipta on the App Store">
-        <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-        <span class="store-badge__text">
-          <span class="store-badge__small">Download on the</span>
-          <span class="store-badge__big">App Store</span>
-        </span>
-      </a>
-      <!-- TODO(Hermann): replace href with real Google Play URL -->
-      <a class="store-badge store-badge--paper" href="#" aria-label="Get Cipta on Google Play">
-        <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
-        <span class="store-badge__text">
-          <span class="store-badge__small">Get it on</span>
-          <span class="store-badge__big">Google Play</span>
-        </span>
-      </a>
+    <h2 class="cta__title">Start your<br /><em>30-day pilot.</em></h2>
+    <p class="cta__lede">Your menu, your receipts, your dashboard. Live in 30 days, no POS integration, no card required to start.</p>
+    <div style="display:flex; justify-content:center; margin-top: 8px;">
+      <a class="hero__primary-cta" href="https://cipta.co/operator/sign-up" style="font-size: 14px; padding: 16px 28px;">Claim your restaurant</a>
     </div>
-    <p class="cta__fineprint" style="margin-top: 32px;">Free for diners, forever · No ads · No paid placement</p>
+    <p class="cta__fineprint" style="margin-top: 32px;">$99/mo single location · $79/location for 2-9 · Cancel anytime</p>
   </div>
   <div class="cta__watermark" aria-hidden="true">cipta</div>
 </section>
@@ -1228,44 +1805,28 @@ body::before {
   <div class="foot__grid">
     <div>
       <div class="foot__brand">Cipta</div>
-      <p class="foot__tag">The receipt is the review. Built in Dallas–Fort Worth.</p>
-      <div class="store-badges" style="margin-top: 24px;">
-        <!-- TODO(Hermann): replace href with real App Store URL -->
-        <a class="store-badge" href="#" aria-label="Download Cipta on the App Store">
-          <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-          <span class="store-badge__text">
-            <span class="store-badge__small">Download on the</span>
-            <span class="store-badge__big">App Store</span>
-          </span>
-        </a>
-        <!-- TODO(Hermann): replace href with real Google Play URL -->
-        <a class="store-badge" href="#" aria-label="Get Cipta on Google Play">
-          <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
-          <span class="store-badge__text">
-            <span class="store-badge__small">Get it on</span>
-            <span class="store-badge__big">Google Play</span>
-          </span>
-        </a>
-      </div>
+      <p class="foot__tag">The receipt is the review. Built in Dallas-Fort Worth.</p>
+      <p class="foot__tag" style="margin-top: 16px;">
+        <a href="https://cipta.co/operator/sign-up" class="hero__primary-cta" style="font-size: 11px; padding: 10px 16px;">Claim your restaurant</a>
+      </p>
     </div>
     <div class="foot__col">
-      <h4>Product</h4>
+      <h4>For restaurants</h4>
       <a href="#how">How it works</a>
-      <a href="#ledger">Your record</a>
-      <a href="#thesis">Verification</a>
-      <a href="#compare">Comparison</a>
+      <a href="#owners">For operators</a>
+      <a href="#pricing">Pricing</a>
+      <a href="https://cipta.co/sign-in">Sign in</a>
     </div>
     <div class="foot__col">
-      <h4>Restaurants</h4>
-      <a href="#owners">For owners</a>
-      <a href="#download">Claim listing</a>
-      <a href="#">Press kit</a>
+      <h4>For diners</h4>
+      <a href="#diner">Customer flow</a>
+      <a href="#thesis">Verification</a>
+      <a href="#compare">Vs. the rest</a>
     </div>
     <div class="foot__col">
       <h4>Company</h4>
-      <a href="#">About</a>
-      <a href="#">Contact</a>
-      <a href="#">Privacy</a>
+      <a href="mailto:privacy@getcipta.com">Contact</a>
+      <a href="https://cipta.co/privacy">Privacy</a>
     </div>
   </div>
   <div class="foot__legal">
@@ -1274,25 +1835,7 @@ body::before {
   </div>
 </footer>
 
-<!-- ============= STICKY MOBILE INSTALL BAR ============= -->
-<aside class="install-bar" aria-label="install Cipta">
-  <div class="install-bar__copy">
-    Free in DFW
-    <strong>Get Cipta</strong>
-  </div>
-  <div class="install-bar__ctas">
-    <!-- TODO(Hermann): replace href with real App Store URL -->
-    <a class="install-bar__btn" href="#" aria-label="Download on the App Store">
-      <svg viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-      iOS
-    </a>
-    <!-- TODO(Hermann): replace href with real Google Play URL -->
-    <a class="install-bar__btn" href="#" aria-label="Get it on Google Play">
-      <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
-      Android
-    </a>
-  </div>
-</aside>
+
 
 </body>
 </html>
