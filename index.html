@@ -95,6 +95,27 @@ em{font-style:italic;}
   transition:color .15s,background .15s;font-weight:450;}
 .nav-links a:hover{color:var(--orange-dark);background:rgba(237,106,45,0.10);}
 .nav-right{display:flex;align-items:center;gap:8px;}
+
+/* hamburger toggle — hidden on desktop */
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;
+  border:1px solid var(--border);border-radius:11px;background:var(--surface);cursor:pointer;padding:0 11px;}
+.nav-toggle span{display:block;height:2px;width:100%;background:var(--text);border-radius:2px;
+  transition:transform .25s ease,opacity .2s ease;}
+.nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav.open .nav-toggle span:nth-child(2){opacity:0;}
+.nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+/* mobile dropdown panel */
+.mnav{display:none;flex-direction:column;gap:2px;margin:8px 16px 0;padding:10px;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 24px 50px -28px rgba(31,26,20,0.4);}
+.nav.open .mnav{display:flex;}
+.mnav a{font-size:15px;font-weight:500;color:var(--text);padding:13px 14px;border-radius:10px;}
+.mnav a:hover{background:rgba(237,106,45,0.10);color:var(--orange-dark);}
+.mnav .mnav-cta{margin-top:6px;text-align:center;font-weight:600;color:#fff;
+  background:var(--orange);border:1px solid var(--orange-dark);}
+.mnav .mnav-cta:hover{background:var(--orange-dark);color:#fff;}
+@media(max-width:860px){.nav-toggle{display:flex;}.nav-right .btn-primary{display:none;}}
 @media(max-width:860px){.nav-links{display:none;}}
 
 /* ---------- buttons ---------- */
@@ -343,8 +364,15 @@ em{font-style:italic;}
 .marquee span::after{content:"★";color:var(--orange);font-size:11px;}
 @keyframes scroll{to{transform:translateX(-50%);}}
 
-/* ---------- section shell ---------- */
-section.block{padding:72px 0;}
+/* ---------- receipt tear divider ---------- */
+.tear{position:relative;max-width:920px;margin:0 auto;padding:0 30px;}
+.tear::before{content:"";display:block;border-top:2px dashed var(--ink-soft);opacity:1;}
+.tear .notch{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;
+  background:var(--bg);box-shadow:inset 0 1px 3px rgba(31,26,20,0.4);transform:translateY(-50%);}
+.tear .notch.l{left:20px;}
+.tear .notch.r{right:20px;}
+
+/* ---------- section shell ---------- */section.block{padding:72px 0;}
 .sec-head{text-align:center;max-width:680px;margin:0 auto 40px;}
 .sec-head .eyebrow{margin-bottom:18px;}
 .sec-head h2{font-family:var(--sans);font-weight:700;letter-spacing:-0.03em;
@@ -553,8 +581,18 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
     </nav>
     <div class="nav-right">
       <a class="btn btn-primary" href="https://cipta.co" target="_blank" rel="noopener">Claim your restaurant</a>
+      <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mnav">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
+  <nav class="mnav" id="mnav" aria-label="mobile">
+    <a href="#how">How it works</a>
+    <a href="#dashboard">For operators</a>
+    <a href="#diners">For diners</a>
+    <a href="#pricing">Pricing</a>
+    <a class="mnav-cta" href="https://cipta.co" target="_blank" rel="noopener">Claim your restaurant</a>
+  </nav>
 </header>
 
 <!-- HERO -->
@@ -605,6 +643,8 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
   </div>
 </section>
 
+<div class="tear" aria-hidden="true"><span class="notch l"></span><span class="notch r"></span></div>
+
 <!-- HOW -->
 <section class="block container" id="how">
   <div class="sec-head reveal">
@@ -630,6 +670,8 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
     </div>
   </div>
 </section>
+
+<div class="tear" aria-hidden="true"><span class="notch l"></span><span class="notch r"></span></div>
 
 <!-- FEATURE / DASHBOARD -->
 <section class="block container" id="dashboard">
@@ -762,6 +804,8 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
   </div>
 </section>
 
+<div class="tear" aria-hidden="true"><span class="notch l"></span><span class="notch r"></span></div>
+
 <!-- STATS -->
 <section class="container" style="padding:20px 24px 60px;">
   <div class="stats reveal">
@@ -771,6 +815,8 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
     <div class="stat"><div class="big">$0</div><div class="lbl">POS integration needed</div></div>
   </div>
 </section>
+
+<div class="tear" aria-hidden="true"><span class="notch l"></span><span class="notch r"></span></div>
 
 <!-- PRICING -->
 <section class="block container" id="pricing">
@@ -808,6 +854,8 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
     </div>
   </div>
 </section>
+
+<div class="tear" aria-hidden="true"><span class="notch l"></span><span class="notch r"></span></div>
 
 <!-- DINER -->
 <section class="container" id="diners" style="padding:0 24px 60px;">
@@ -884,6 +932,8 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
   </div>
 </section>
 
+<div class="tear" aria-hidden="true"><span class="notch l"></span><span class="notch r"></span></div>
+
 <!-- FINAL CTA -->
 <section class="block container">
   <div class="final reveal">
@@ -937,6 +987,19 @@ footer{border-top:1px solid var(--border);padding:48px 0 40px;margin-top:104px;}
     entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
   },{threshold:0.12,rootMargin:'0px 0px -8% 0px'});
   document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+
+  // mobile nav toggle
+  var nav=document.querySelector('.nav');
+  var tgl=document.querySelector('.nav-toggle');
+  if(tgl&&nav){
+    tgl.addEventListener('click',function(){
+      var open=nav.classList.toggle('open');
+      tgl.setAttribute('aria-expanded',open?'true':'false');
+    });
+    nav.querySelectorAll('.mnav a').forEach(function(a){
+      a.addEventListener('click',function(){nav.classList.remove('open');tgl.setAttribute('aria-expanded','false');});
+    });
+  }
 })();
 </script>
 </body>
